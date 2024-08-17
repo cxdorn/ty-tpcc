@@ -39,7 +39,7 @@ import execnet
 import worker
 import message
 from ConfigParser import SafeConfigParser
-from pprint import pprint,pformat
+from pprint import pprint, pformat
 
 from util import *
 from runtime import *
@@ -48,8 +48,8 @@ import drivers
 logging.basicConfig(level = logging.INFO,
                     format="%(asctime)s [%(funcName)s:%(lineno)03d] %(levelname)-5s: %(message)s",
                     datefmt="%m-%d-%Y %H:%M:%S",
-                    stream = sys.stdout)
-                    
+                    filename='results.log')
+
 ## ==============================================
 ## createDriverClass
 ## ==============================================
@@ -64,16 +64,16 @@ def createDriverClass(name):
 ## getDrivers
 ## ==============================================
 def getDrivers():
-    drivers = [ ]
+    drivers = []
     for f in map(lambda x: os.path.basename(x).replace("driver.py", ""), glob.glob("./drivers/*driver.py")):
         if f != "abstract": drivers.append(f)
-    return (drivers)
+    return drivers
 ## DEF
 
 ## ==============================================
 ## startLoading
 ## ==============================================
-def startLoading(scalParameters,args,config,channels):  
+def startLoading(scalParameters,args,config,channels):
     #Split the warehouses into chunks
     procs = len(channels)
     w_ids = map(lambda x:[], range(procs))
@@ -81,7 +81,7 @@ def startLoading(scalParameters,args,config,channels):
         idx = w_id % procs
         w_ids[idx].append(w_id)
     print w_ids
-        
+
     load_start=time.time()
     for i in range(len(channels)):
         m=message.Message(header=message.CMD_LOAD,data=[scalParameters,args,config,w_ids[i]])
@@ -98,14 +98,14 @@ def startLoading(scalParameters,args,config,channels):
 def startExecution(scaleParameters, args, config,channels):
     procs = len(channels)
     total_results = results.Results()
-    
+
     for ch in channels:
         m=message.Message(header=message.CMD_EXECUTE,data=[scaleParameters,args,config])
         ch.send(pickle.dumps(m,-1))
     for ch in channels:
         r=pickle.loads(ch.receive()).data
         total_results.append(r)
-    return (total_results)
+    return total_results
 ## DEF
 
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     ## number of processes per node
     aparser.add_argument('--clientprocs', default=1, type=int, metavar='N',
                          help='Number of processes on each client node.')
-                         
+
     aparser.add_argument('--stop-on-error', action='store_true',
                          help='Stop the transaction execution when the driver throws an exception.')
     aparser.add_argument('--no-load', action='store_true',
@@ -145,10 +145,6 @@ if __name__ == '__main__':
     args = vars(aparser.parse_args())
 
     if args['debug']: logging.getLogger().setLevel(logging.DEBUG)
-
-    ## Arguments validation
-    assert args['reset'] == False or args['no_load'] == False, \
-        "'--reset' and '--no-load' are incompatible with each other"
 
     ## Create a handle to the target client driver
     driverClass = createDriverClass(args['system'])
@@ -164,7 +160,7 @@ if __name__ == '__main__':
     ## Load Configuration file
     if args['config']:
         logging.debug("Loading configuration file '%s'" % args['config'])
-        cparser = SafeConfigParser()
+        cparser = ConfigParser()
         cparser.read(os.path.realpath(args['config'].name))
         config = dict(cparser.items(args['system']))
     else:
@@ -177,8 +173,8 @@ if __name__ == '__main__':
     if config['reset']: logging.info("Reseting database")
     driver.loadConfig(config)
     logging.info("Initializing TPC-C benchmark using %s" % driver)
-    
-    
+
+
     ##Get a list of clientnodes from configuration file.
     clients=[]
     channels=[]
@@ -195,24 +191,25 @@ if __name__ == '__main__':
             gw=execnet.makegateway(cmd)
             ch=gw.remote_exec(worker)
             channels.append(ch)
-    
+
     ## Create ScaleParameters
     scaleParameters = scaleparameters.makeWithScaleFactor(args['warehouses'], args['scalefactor'])
     nurand = rand.setNURand(nurand.makeForLoad())
     if args['debug']: logging.debug("Scale Parameters:\n%s" % scaleParameters)
-    
+
     ## DATA LOADER!!!
     load_time = None
     if not args['no_load']:
         load_time = startLoading(scaleParameters, args, config,channels)
         #print load_time
     ## IF
-    
+
     ## WORKLOAD DRIVER!!!
     if not args['no_execute']:
         results = startExecution(scaleParameters, args, config,channels)
         assert results
-        print results.show(load_time)
+        logging.info(results.show(load_time, driver, len(channels)))
+        print results.show(load_time, driver, len(channels))
     ## IF
-    
+
 ## MAIN

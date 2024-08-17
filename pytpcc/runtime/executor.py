@@ -43,48 +43,63 @@ from util import *
 
 
 class Executor:
-    
+
     def __init__(self, driver, scaleParameters, stop_on_error = False):
         self.driver = driver
         self.scaleParameters = scaleParameters
         self.stop_on_error = stop_on_error
     ## DEF
-    
-    def execute(self, duration):
-        r = results.Results()
-        assert r
-        logging.info("Executing benchmark for %d seconds" % duration)
-        start = r.startBenchmark()
-        debug = logging.getLogger().isEnabledFor(logging.DEBUG)
 
+    def execute(self, duration):
+        global_result = results.Results()
+        assert global_result, "Failed to return a Results object"
+        logging.debug("Executing benchmark for %d seconds" % duration)
+        start = global_result.startBenchmark()
+        debug = logging.getLogger().isEnabledFor(logging.DEBUG)
+        # Batch Results
+        batch_result = results.Results()
+        start_batch = batch_result.startBenchmark()
         while (time.time() - start) <= duration:
             txn, params = self.doOne()
-            txn_id = r.startTransaction(txn)
-            
+            global_txn_id = global_result.startTransaction(txn)
+            batch_txn_id = batch_result.startTransaction(txn)
             if debug: logging.debug("Executing '%s' transaction" % txn)
             try:
-                val = self.driver.executeTransaction(txn, params)
+                (val, retries) = self.driver.executeTransaction(txn, params)
             except KeyboardInterrupt:
                 return -1
-            except (Exception, AssertionError), ex:
+            except (Exception, AssertionError) as ex:
                 logging.warn("Failed to execute Transaction '%s': %s" % (txn, ex))
-                if debug: traceback.print_exc(file=sys.stdout)
+                traceback.print_exc(file=sys.stdout)
+                print("Aborting some transaction with some error %s %s" % (txn, ex))
+                global_result.abortTransaction(global_txn_id)
+                batch_result.abortTransaction(batch_txn_id)
                 if self.stop_on_error: raise
-                r.abortTransaction(txn_id)
                 continue
 
-            #if debug: logging.debug("%s\nParameters:\n%s\nResult:\n%s" % (txn, pformat(params), pformat(val)))
-            
-            r.stopTransaction(txn_id)
+            if val is None:
+                global_result.abortTransaction(global_txn_id, retries)
+                batch_result.abortTransaction(batch_txn_id, retries)
+                continue
+
+            batch_result.stopTransaction(batch_txn_id, retries)
+            global_result.stopTransaction(global_txn_id, retries)
+
+            if time.time() - start_batch > 900: # every 15 minutes
+                batch_result.stopBenchmark()
+                logging.info(batch_result.show())
+                batch_result = results.Results()
+                start_batch = batch_result.startBenchmark()
+
         ## WHILE
-            
-        r.stopBenchmark()
-        return (r)
+        batch_result.stopBenchmark()
+        global_result.stopBenchmark()
+        return (global_result)
     ## DEF
-    
+
     def doOne(self):
         """Selects and executes a transaction at random. The number of new order transactions executed per minute is the official "tpmC" metric. See TPC-C 5.4.2 (page 71)."""
-        
+
         ## This is not strictly accurate: The requirement is for certain
         ## *minimum* percentages to be maintained. This is close to the right
         ## thing, but not precisely correct. See TPC-C 5.2.4 (page 68).
@@ -100,9 +115,9 @@ class Executor:
         elif x <= 43 + 4 + 4 + 4: ## 43%
             txn, params = (constants.TransactionTypes.PAYMENT, self.generatePaymentParams())
         else: ## 45%
-            assert x > 100 - 45
+            assert x > 100 - 45, "Random number wasn't within specified range or percentages don't add up (%d)" % x
             txn, params = (constants.TransactionTypes.NEW_ORDER, self.generateNewOrderParams())
-        
+
         return (txn, params)
     ## DEF
 
@@ -129,7 +144,7 @@ class Executor:
         o_entry_d = datetime.now()
 
         ## 1% of transactions roll back
-        rollback = False # FIXME rand.number(1, 100) == 1
+        rollback = rand.number(1, 100) == 1
 
         i_ids = [ ]
         i_w_ids = [ ]
@@ -165,7 +180,7 @@ class Executor:
         d_id = self.makeDistrictId()
         c_last = None
         c_id = None
-        
+
         ## 60%: order status by last name
         if rand.number(1, 100) <= 60:
             c_last = rand.makeRandomLastName(self.scaleParameters.customersPerDistrict)
@@ -173,7 +188,7 @@ class Executor:
         ## 40%: order status by id
         else:
             c_id = self.makeCustomerId()
-            
+
         return makeParameterDict(locals(), "w_id", "d_id", "c_id", "c_last")
     ## DEF
 
@@ -202,7 +217,7 @@ class Executor:
         else:
             ## select in range [1, num_warehouses] excluding w_id
             c_w_id = rand.numberExcluding(self.scaleParameters.starting_warehouse, self.scaleParameters.ending_warehouse, w_id)
-            assert c_w_id != w_id
+            assert c_w_id != w_id, "Failed to generate W_ID that's not equal to C_W_ID"
             c_d_id = self.makeDistrictId()
 
         ## 60%: payment by last name
@@ -210,7 +225,7 @@ class Executor:
             c_last = rand.makeRandomLastName(self.scaleParameters.customersPerDistrict)
         ## 40%: payment by id
         else:
-            assert y > 60
+            assert y > 60, "Bad random payment value generated %d" % y
             c_id = self.makeCustomerId()
 
         return makeParameterDict(locals(), "w_id", "d_id", "h_amount", "c_w_id", "c_d_id", "c_id", "c_last", "h_date")
