@@ -34,11 +34,11 @@ from __future__ import with_statement
 import os
 import sqlite3
 import logging
-import commands
+import subprocess
 from pprint import pprint,pformat
 
 import constants
-from abstractdriver import *
+from .abstractdriver import AbstractDriver
 
 TXN_QUERIES = {
     "DELIVERY": {
@@ -135,8 +135,8 @@ class SqliteDriver(AbstractDriver):
             logging.debug("Loading DDL file '%s'" % (self.ddl))
             ## HACK
             cmd = "sqlite3 %s < %s" % (self.database, self.ddl)
-            (result, output) = commands.getstatusoutput(cmd)
-            assert result == 0, cmd + "\n" + output
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            assert result.returncode == 0, cmd + "\n" + result.stdout + "\n" + result.stderr
         ## IF
             
         self.conn = sqlite3.connect(self.database)
@@ -205,7 +205,7 @@ class SqliteDriver(AbstractDriver):
         ## FOR
 
         self.conn.commit()
-        return result
+        return (result,0)
 
     ## ----------------------------------------------
     ## doNewOrder
@@ -237,9 +237,9 @@ class SqliteDriver(AbstractDriver):
         ## TPCC defines 1% of neworder gives a wrong itemid, causing rollback.
         ## Note that this will happen with 1% of transactions on purpose.
         for item in items:
-            if len(item) == 0:
+            if item is None:
                 ## TODO Abort here!
-                return
+                return (None,0)
         ## FOR
         
         ## ----------------
@@ -334,7 +334,7 @@ class SqliteDriver(AbstractDriver):
         ## Pack up values the client is missing (see TPC-C 2.4.3.5)
         misc = [ (w_tax, d_tax, d_next_o_id, total) ]
         
-        return [ customer_info, misc, item_data ]
+        return ([ customer_info, misc, item_data ],0)
 
     ## ----------------------------------------------
     ## doOrderStatus
@@ -359,7 +359,7 @@ class SqliteDriver(AbstractDriver):
             all_customers = self.cursor.fetchall()
             assert len(all_customers) > 0
             namecnt = len(all_customers)
-            index = (namecnt-1)/2
+            index = (namecnt-1) // 2
             customer = all_customers[index]
             c_id = customer[0]
         assert len(customer) > 0
@@ -374,7 +374,7 @@ class SqliteDriver(AbstractDriver):
             orderLines = [ ]
 
         self.conn.commit()
-        return [ customer, order, orderLines ]
+        return ([ customer, order, orderLines ],0)
 
     ## ----------------------------------------------
     ## doPayment
@@ -400,7 +400,7 @@ class SqliteDriver(AbstractDriver):
             all_customers = self.cursor.fetchall()
             assert len(all_customers) > 0
             namecnt = len(all_customers)
-            index = (namecnt-1)/2
+            index = (namecnt-1) // 2
             customer = all_customers[index]
             c_id = customer[0]
         assert len(customer) > 0
@@ -443,7 +443,7 @@ class SqliteDriver(AbstractDriver):
         # H_AMOUNT, and H_DATE.
 
         # Hand back all the warehouse, district, and customer data
-        return [ warehouse, district, customer ]
+        return ([ warehouse, district, customer ],0)
         
     ## ----------------------------------------------
     ## doStockLevel
@@ -465,6 +465,6 @@ class SqliteDriver(AbstractDriver):
         
         self.conn.commit()
         
-        return int(result[0])
+        return (int(result[0]),0)
         
 ## CLASS

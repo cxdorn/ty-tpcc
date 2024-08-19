@@ -213,42 +213,44 @@ class Results:
         ret += f % ("TOTAL", str(total_cnt), u"%12.3f" % total_time, "", "", "", "", "", "", "", "", "", "")
         if driver != None:
             # print(driver)
-            result_doc['tpmc'] = txn_new_order*60/duration
-            result_doc['denorm'] = driver.denormalize
-            result_doc['duration'] = duration
-            result_doc['warehouses'] = driver.warehouses
-            result_doc['date'] = time.strftime("%Y-%m-%d %H:%M:%S")
-            result_doc['threads'] = threads
-            result_doc['txn'] = not driver.no_transactions
-            result_doc['batch_writes'] = driver.batch_writes
-            result_doc['find_and_modify'] = driver.find_and_modify
-            result_doc['read_preference'] = driver.read_preference
-            result_doc['write_concern'] = driver.write_concern.document['w']
-            result_doc['causal'] = driver.causal_consistency
-            result_doc['all_in_one_txn'] = driver.all_in_one_txn
-            result_doc['retry_writes'] = driver.retry_writes
-            result_doc['read_concern'] = driver.read_concern
+            result_doc['tpmc'] = txn_new_order * 60 / duration 
+            result_doc['denorm'] = getattr(driver, 'denormalize', 'n/a') 
+            result_doc['duration'] = duration 
+            result_doc['warehouses'] = getattr(driver, 'warehouses', 'n/a') 
+            result_doc['date'] = time.strftime("%Y-%m-%d %H:%M:%S") 
+            result_doc['threads'] = threads 
+            result_doc['txn'] = not getattr(driver, 'no_transactions', False) 
+            result_doc['batch_writes'] = getattr(driver, 'batch_writes', 'n/a')
+            result_doc['find_and_modify'] = getattr(driver, 'find_and_modify', 'n/a')
+            result_doc['read_preference'] = getattr(driver, 'read_preference', 'n/a')
+            result_doc['write_concern'] = getattr(driver, 'write_concern', {}).get('document', {}).get('w', 'n/a')
+            result_doc['causal'] = getattr(driver, 'causal_consistency', 'n/a')
+            result_doc['all_in_one_txn'] = getattr(driver, 'all_in_one_txn', 'n/a')
+            result_doc['retry_writes'] = getattr(driver, 'retry_writes', 'n/a')
+            result_doc['read_concern'] = getattr(driver, 'read_concern', 'n/a')
             result_doc['total_retries'] = total_retries
             result_doc['total'] = total_cnt
             result_doc['aborts'] = total_aborts
-            ret += "\n%s TpmC for %s %s thr %s txn %d WH: %d %d total %d durSec, batch %s %d retries %s%% %s fnM %s p50 %s p75 %s p90 %s p95 %s p99 %s max %s WC %s causal %s 10in1 %s retry %s %d %d" % (
-                time.strftime("%Y-%m-%d %H:%M:%S"),
-                ("normal", "denorm")[driver.denormalize],
+            ret += "\n%s TpmC for %s %s thr %s txn %s WH: %s %s total %s durSec, batch %s %s retries %s%% %s fnM %s p50 %s p75 %s p90 %s p95 %s p99 %s max %s WC %s causal %s 10in1 %s retry %s %s %s" % ( time.strftime("%Y-%m-%d %H:%M:%S"), "n/a",
                 threads,
-                ("with", "w/o ")[driver.no_transactions],
-                driver.warehouses,
-                round(txn_new_order*60/duration), txn_new_order, duration,
-                ("off", "on")[driver.batch_writes], total_retries, str(100.0*total_retries/total_cnt)[:5],
-                ("w/o ", "with")[driver.find_and_modify],
-                driver.read_preference,
-                u"%6.2f" % (1000* lat[int(samples/2)]), u"%6.2f" % (1000*lat[int(samples/100.0*75)]),
-                u"%6.2f" % (1000*lat[int(samples/100.0*90)]), u"%6.2f" % (1000*lat[int(samples/100.0*95)]),
-                u"%6.2f" % (1000*lat[int(samples/100.0*99)]),
-                u"%6.2f" % (1000.0*lat[-1]),
-                str(driver.write_concern), ('false', 'true')[driver.causal_consistency],
-                ('false', 'true')[driver.all_in_one_txn], ('false', 'true')[driver.retry_writes],total_cnt,total_aborts)
-        if driver:
-            driver.save_result(result_doc)
+                "n/a",
+                result_doc['warehouses'],
+                round(txn_new_order * 60 / duration), txn_new_order, duration,
+                "n/a", total_retries, str(100.0 * total_retries / total_cnt)[:5],
+                "n/a",
+                "n/a",
+                u"%6.2f" % (1000 * lat[int(samples / 2)]), u"%6.2f" % (1000 * lat[int(samples / 100.0 * 75)]),
+                u"%6.2f" % (1000 * lat[int(samples / 100.0 * 90)]), u"%6.2f" % (1000 * lat[int(samples / 100.0 * 95)]),
+                u"%6.2f" % (1000 * lat[int(samples / 100.0 * 99)]),
+                u"%6.2f" % (1000.0 * lat[-1]),
+                "n/a",
+                "n/a",
+                "n/a",
+                "n/a",
+                total_cnt, total_aborts
+            )
+        ## if driver:
+            ## driver.save_result(result_doc)  # MongoDb driver-specific function
         print(result_doc)
         return ret
 ## CLASS
