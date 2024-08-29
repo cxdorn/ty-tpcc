@@ -69,9 +69,12 @@ def createDriverClass(name):
 ## ==============================================
 def getDrivers():
     drivers = []
-    for f in [os.path.basename(drv).replace("driver.py", "") for drv in glob.glob("./drivers/*driver.py")]:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    driver_dir = os.path.join(script_dir, "drivers")
+    for f in [os.path.basename(drv).replace("driver.py", "") for drv in glob.glob(os.path.join(driver_dir, "*driver.py"))]:
         if f != "abstract":
             drivers.append(f)
+    return drivers
     return drivers
 ## DEF
 
@@ -195,7 +198,7 @@ if __name__ == '__main__':
                          help='Path to driver configuration file')
     aparser.add_argument('--reset', action='store_true',
                          help='Instruct the driver to reset the contents of the database')
-    aparser.add_argument('--scalefactor', default=1, type=float, metavar='SF',
+    aparser.add_argument('--scalefactor', default=100, type=float, metavar='SF',
                          help='Benchmark scale factor')
     aparser.add_argument('--warehouses', default=4, type=int, metavar='W',
                          help='Number of Warehouses')

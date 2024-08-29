@@ -24,6 +24,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 # -----------------------------------------------------------------------
 
+import pprint
 import logging
 import time
 from collections import Counter
@@ -204,7 +205,7 @@ class Results:
             if just_retries:
                 result_doc[txn]['retries']={'retries_ops':freq_dist, 'retries_txn_total':total_retries, 'retries_total_ops':len(just_retries)}
 
-        print(self.txn_counters)
+        pprint.pprint(self.txn_counters)
         txn_new_order = self.txn_counters.get('NEW_ORDER', 0)
         ret += "\n" + line # ("-"*total_width)
         #total_rate = "%.02f txn/s" % ((total_cnt / total_time))
@@ -223,7 +224,11 @@ class Results:
             result_doc['batch_writes'] = getattr(driver, 'batch_writes', 'n/a')
             result_doc['find_and_modify'] = getattr(driver, 'find_and_modify', 'n/a')
             result_doc['read_preference'] = getattr(driver, 'read_preference', 'n/a')
-            result_doc['write_concern'] = getattr(driver, 'write_concern', {}).get('document', {}).get('w', 'n/a')
+            write_concern = getattr(driver, 'write_concern', None)
+            if write_concern is not None and hasattr(write_concern, 'document'):
+                result_doc['write_concern'] = write_concern.document.get('w', 'n/a')
+            else:
+                result_doc['write_concern'] = 'n/a'
             result_doc['causal'] = getattr(driver, 'causal_consistency', 'n/a')
             result_doc['all_in_one_txn'] = getattr(driver, 'all_in_one_txn', 'n/a')
             result_doc['retry_writes'] = getattr(driver, 'retry_writes', 'n/a')
@@ -231,26 +236,36 @@ class Results:
             result_doc['total_retries'] = total_retries
             result_doc['total'] = total_cnt
             result_doc['aborts'] = total_aborts
-            ret += "\n%s TpmC for %s %s thr %s txn %s WH: %s %s total %s durSec, batch %s %s retries %s%% %s fnM %s p50 %s p75 %s p90 %s p95 %s p99 %s max %s WC %s causal %s 10in1 %s retry %s %s %s" % ( time.strftime("%Y-%m-%d %H:%M:%S"), "n/a",
+            ret += "\n%s Result summary. \n \
+                CONFIG: \n \
+                    denormalized schema: %s  \n \
+                    threads: %s  \n \
+                    txn enabled: %s  \n \
+                    warehouses: %s  \n \
+                TOTAL: \n \
+                    New_Order TpM: %s \n \
+                    Total New Order: %s  \n \
+                        in %s durSec,  \n \
+                    retries-total %s  \n \
+                    retrie-perc %s%%  \n \
+                    stats: %s p50 %s p75 %s p90 %s p95 %s p99 %s max  %s retry %s total_txn %s %s" % ( 
+                time.strftime("%Y-%m-%d %H:%M:%S"), 
+                result_doc['denorm'],
                 threads,
-                "n/a",
+                result_doc['txn'],
                 result_doc['warehouses'],
                 round(txn_new_order * 60 / duration), txn_new_order, duration,
-                "n/a", total_retries, str(100.0 * total_retries / total_cnt)[:5],
-                "n/a",
+                total_retries, str(100.0 * total_retries / total_cnt)[:5],
                 "n/a",
                 u"%6.2f" % (1000 * lat[int(samples / 2)]), u"%6.2f" % (1000 * lat[int(samples / 100.0 * 75)]),
                 u"%6.2f" % (1000 * lat[int(samples / 100.0 * 90)]), u"%6.2f" % (1000 * lat[int(samples / 100.0 * 95)]),
                 u"%6.2f" % (1000 * lat[int(samples / 100.0 * 99)]),
                 u"%6.2f" % (1000.0 * lat[-1]),
                 "n/a",
-                "n/a",
-                "n/a",
-                "n/a",
                 total_cnt, total_aborts
             )
         ## if driver:
             ## driver.save_result(result_doc)  # MongoDb driver-specific function
-        print(result_doc)
+        pprint.pprint(result_doc)
         return ret
 ## CLASS

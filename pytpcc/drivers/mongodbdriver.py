@@ -39,8 +39,10 @@ from pprint import pformat
 from time import sleep
 import pymongo
 
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import constants
-from .abstractdriver import AbstractDriver
+from drivers.abstractdriver import AbstractDriver
 
 TABLE_COLUMNS = {
     constants.TABLENAME_ITEM: [

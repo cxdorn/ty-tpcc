@@ -37,8 +37,10 @@ import logging
 import subprocess
 from pprint import pprint,pformat
 
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import constants
-from .abstractdriver import AbstractDriver
+from drivers.abstractdriver import AbstractDriver
 
 TXN_QUERIES = {
     "DELIVERY": {
@@ -126,7 +128,7 @@ class SqliteDriver(AbstractDriver):
             assert key in config, "Missing parameter '%s' in %s configuration" % (key, self.name)
         
         self.database = str(config["database"])
-        
+
         if config["reset"] and os.path.exists(self.database):
             logging.debug("Deleting database '%s'" % self.database)
             os.unlink(self.database)
@@ -179,7 +181,7 @@ class SqliteDriver(AbstractDriver):
             if newOrder == None:
                 ## No orders for this district: skip it. Note: This must be reported if > 1%
                 continue
-            assert len(newOrder) > 0
+            assert newOrder is not None
             no_o_id = newOrder[0]
             
             self.cursor.execute(q["getCId"], [no_o_id, d_id, w_id])
@@ -362,7 +364,7 @@ class SqliteDriver(AbstractDriver):
             index = (namecnt-1) // 2
             customer = all_customers[index]
             c_id = customer[0]
-        assert len(customer) > 0
+        assert customer is not None
         assert c_id != None
 
         self.cursor.execute(q["getLastOrder"], [w_id, d_id, c_id])
@@ -403,7 +405,7 @@ class SqliteDriver(AbstractDriver):
             index = (namecnt-1) // 2
             customer = all_customers[index]
             c_id = customer[0]
-        assert len(customer) > 0
+        assert customer is not None
         c_balance = customer[14] - h_amount
         c_ytd_payment = customer[15] + h_amount
         c_payment_cnt = customer[16] + 1
@@ -457,7 +459,7 @@ class SqliteDriver(AbstractDriver):
         
         self.cursor.execute(q["getOId"], [w_id, d_id])
         result = self.cursor.fetchone()
-        assert result
+        assert result is not None
         o_id = result[0]
         
         self.cursor.execute(q["getStockCount"], [w_id, d_id, o_id, (o_id - 20), w_id, threshold])
