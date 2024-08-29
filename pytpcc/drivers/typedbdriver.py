@@ -36,11 +36,17 @@ import sqlite3
 import logging
 import subprocess
 from pprint import pprint,pformat
+from typedb.driver import TypeDB, SessionType, TransactionType, TypeDBOptions, TypeDBCredential
 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import constants
 from drivers.abstractdriver import AbstractDriver
+from enum import Enum
+
+class EDITION(Enum):
+    Cloud = 1
+    Core = 2
 
 TXN_QUERIES = {
     "DELIVERY": {
@@ -52,7 +58,36 @@ TXN_QUERIES = {
         "sumOLAmount": "SELECT SUM(OL_AMOUNT) FROM ORDER_LINE WHERE OL_O_ID = ? AND OL_D_ID = ? AND OL_W_ID = ?", # no_o_id, d_id, w_id
         "updateCustomer": "UPDATE CUSTOMER SET C_BALANCE = C_BALANCE + ? WHERE C_ID = ? AND C_D_ID = ? AND C_W_ID = ?", # ol_total, c_id, d_id, w_id
     },
+
     "NEW_ORDER": {
+        # match
+        #  $i isa ITEM, has I_ID %i_id, has I_PRICE $i_price;
+        #  $w isa WAREHOUSE, has W_ID %w_id;
+        #  (item: $i, warehouse: $w) isa STOCK, has S_QUANTITY $s_quantity, has S_DIST_%02d $s_dist_xx;
+        # get $i_price, $stock_level, $s_dist_xx;
+        #
+        # match 
+        #  $w isa WAREHOUSE, has W_ID %w_id, has W_TAX $w_tax;
+        #  (district: $d, warehouse: $w) isa DISTRICT_SUPPLIER; 
+        #  $d has D_ID %d_id, has D_NEXT_O_ID $d_next_o_id;
+        #  ?d_next_o_id_new = $d_next_o_id + 1;
+        #  (customer: $c, district: $d) isa CUSTOMER_LOCATION;
+        #  $c has C_ID $c_id, C_DISCOUNT $c_discount, C_LAST $c_last, C_CREDIT $c_credit;
+        #  $i isa ITEM, has I_ID %i_id, has I_PRICE $i_price;  # repeat for each item
+        # insert
+        #  $o isa ORDER, 
+        #    has O_ID $d_next_o_id,
+        #    has O_ENTRY_D %o_entry_d, 
+        #    has O_CARRIED_ID %o_carrier_id, 
+        #    has O_OL_CNT %o_ol_cnt, 
+        #    has O_ALL_LOCAL %o_all_local,
+        #    has O_NEW true,
+        #  (order: $o, district: $d, customer: $c) isa ORDER_PLACEMENT;
+        #  (order: $o, item: $i) isa ORDER_LINE;
+        #   
+        # match 
+        #  $w isa WAREHOUSE, has W_ID %w_id;
+        #  
         "getWarehouseTaxRate": "SELECT W_TAX FROM WAREHOUSE WHERE W_ID = ?", # w_id
         "getDistrict": "SELECT D_TAX, D_NEXT_O_ID FROM DISTRICT WHERE D_ID = ? AND D_W_ID = ?", # d_id, w_id
         "incrementNextOrderId": "UPDATE DISTRICT SET D_NEXT_O_ID = ? WHERE D_ID = ? AND D_W_ID = ?", # d_next_o_id, d_id, w_id
@@ -103,47 +138,73 @@ TXN_QUERIES = {
 ## ==============================================
 ## SqliteDriver
 ## ==============================================
-class SqliteDriver(AbstractDriver):
+class TypedbDriver(AbstractDriver):
     DEFAULT_CONFIG = {
-        "database": ("The path to the SQLite database", "/tmp/tpcc.db" ),
+        "database": ("Name of DB", "tpcc" ),
+        "addr": ("Address of server", "127.0.0.1:1729" ),
+        "edition": ("TypeDB Edition (Core or Cloud)", "Core" ),
+        "user": ("DB User", "admin" ),
+        "password": ("DB Password", "password"),
+        "schema": ("Script-relative path to schema file", "tql/tpcc-schema.tql"),
     }
     
     def __init__(self, ddl):
-        super(SqliteDriver, self).__init__("sqlite", ddl)
+        super(TypedbDriver, self).__init__("typedb", ddl)
         self.database = None
-        self.conn = None
-        self.cursor = None
+        self.addr = None
+        self.edition = None
+        self.user = None
+        self.password = None
+        self.driver = None
     
     ## ----------------------------------------------
     ## makeDefaultConfig
     ## ----------------------------------------------
     def makeDefaultConfig(self):
-        return SqliteDriver.DEFAULT_CONFIG
+        return TypedbDriver.DEFAULT_CONFIG
     
     ## ----------------------------------------------
     ## loadConfig
     ## ----------------------------------------------
     def loadConfig(self, config):
-        for key in SqliteDriver.DEFAULT_CONFIG.keys():
+        # Config passed here contains some extra parameters (see `driver.loadConfig` in tpcc.py)
+        for key in TypedbDriver.DEFAULT_CONFIG.keys():
             assert key in config, "Missing parameter '%s' in %s configuration" % (key, self.name)
         
         self.database = str(config["database"])
+        self.addr = str(config["addr"])
+        if config["edition"] == "Core":
+            self.edition = EDITION.Core
+        if config["edition"] == "Cloud":
+            self.edition = EDITION.Cloud
+        self.schema = str(config["schema"])
 
-        if config["reset"] and os.path.exists(self.database):
+        if self.edition is EDITION.Core:
+            self.driver = TypeDB.core_driver(self.addr)
+        if self.edition is EDITION.Cloud:
+            self.credentials = TypeDBCredential(self.username, self.password, tls_enabled=True)
+            self.driver =  TypeDB.cloud_driver(self.addr, self.credentials)
+
+        if config["reset"] and self.driver.databases.contains(self.database):
             logging.debug("Deleting database '%s'" % self.database)
-            os.unlink(self.database)
+            self.driver.databases.get(self.database).delete()
         
-        if os.path.exists(self.database) == False:
-            logging.debug("Loading DDL file '%s'" % (self.ddl))
-            ## HACK
-            cmd = "sqlite3 %s < %s" % (self.database, self.ddl)
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            assert result.returncode == 0, cmd + "\n" + result.stdout + "\n" + result.stderr
+        if not self.driver.databases.contains(self.database):
+            logging.debug("Creating database'%s'" % (self.database))
+            self.driver.databases.create(self.database)
+            with self.driver.session(self.database, SessionType.SCHEMA) as session:
+                logging.debug("Loading schema file'%s'" % (self.schema))
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                full_path = os.path.join(script_dir, self.schema)
+                with open(full_path, 'r') as data:
+                    define_query = data.read()
+                logging.debug("Writing schema")
+                with session.transaction(TransactionType.WRITE) as tx:
+                    tx.query.define(define_query)
+                    tx.commit()
+                logging.debug("Committed schema")
         ## IF
-            
-        self.conn = sqlite3.connect(self.database)
-        self.cursor = self.conn.cursor()
-    
+        
     ## ----------------------------------------------
     ## loadTuples
     ## ----------------------------------------------
@@ -162,7 +223,7 @@ class SqliteDriver(AbstractDriver):
     ## ----------------------------------------------
     def loadFinish(self):
         logging.info("Commiting changes to database")
-        self.conn.commit()
+        self.driver.commit()
 
     ## ----------------------------------------------
     ## doDelivery
@@ -206,7 +267,7 @@ class SqliteDriver(AbstractDriver):
             result.append((d_id, no_o_id))
         ## FOR
 
-        self.conn.commit()
+        self.driver.commit()
         return (result,0)
 
     ## ----------------------------------------------
@@ -325,7 +386,7 @@ class SqliteDriver(AbstractDriver):
         ## FOR
         
         ## Commit!
-        self.conn.commit()
+        self.driver.commit()
 
         ## Adjust the total for the discount
         #print "c_discount:", c_discount, type(c_discount)
@@ -375,7 +436,7 @@ class SqliteDriver(AbstractDriver):
         else:
             orderLines = [ ]
 
-        self.conn.commit()
+        self.driver.commit()
         return ([ customer, order, orderLines ],0)
 
     ## ----------------------------------------------
@@ -435,7 +496,7 @@ class SqliteDriver(AbstractDriver):
         # Create the history record
         self.cursor.execute(q["insertHistory"], [c_id, c_d_id, c_w_id, d_id, w_id, h_date, h_amount, h_data])
 
-        self.conn.commit()
+        self.driver.commit()
 
         # TPC-C 2.5.3.3: Must display the following fields:
         # W_ID, D_ID, C_ID, C_D_ID, C_W_ID, W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP,
@@ -465,7 +526,7 @@ class SqliteDriver(AbstractDriver):
         self.cursor.execute(q["getStockCount"], [w_id, d_id, o_id, (o_id - 20), w_id, threshold])
         result = self.cursor.fetchone()
         
-        self.conn.commit()
+        self.driver.commit()
         
         return (int(result[0]),0)
         

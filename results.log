@@ -851,3 +851,309 @@
 08-29-2024 10:07:31 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=4]:   999 / 1000
 08-29-2024 10:07:31 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
 08-29-2024 10:07:31 [loadFinish:164] INFO : Commiting changes to database
+08-29-2024 10:11:51 [<module>:240] DEBUG: Loading configuration file '<_io.TextIOWrapper name='/Users/cxdorn/Git/ty-tpcc/pytpcc/sqlite.config' mode='r' encoding='UTF-8'>'
+08-29-2024 10:11:51 [<module>:252] INFO : Reseting database
+08-29-2024 10:12:13 [loadConfig:133] DEBUG: Deleting database '/tmp/tpcc.db'
+08-29-2024 10:12:13 [loadConfig:137] DEBUG: Loading DDL file '/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.sql'
+08-29-2024 10:12:13 [<module>:255] INFO : Initializing TPC-C benchmark using SqliteDriver
+08-29-2024 10:12:13 [<module>:260] DEBUG: Scale Parameters:
+1000 items
+4 warehouses
+10 districts/warehouse
+30 customers/district
+9 initial new orders/district
+08-29-2024 10:12:13 [<module>:265] INFO : Loading TPC-C benchmark data using SqliteDriver
+08-29-2024 10:12:13 [execute:059] DEBUG: Loading ITEM table
+08-29-2024 10:12:13 [loadItems:086] DEBUG: LOAD - ITEM:   500 / 1000
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName ITEM
+08-29-2024 10:12:13 [loadItems:086] DEBUG: LOAD - ITEM:  1000 / 1000
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName ITEM
+08-29-2024 10:12:13 [loadWarehouse:099] DEBUG: LOAD - WAREHOUSE: 1 / 4
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName WAREHOUSE
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 293 tuples for tableName ORDER_LINE
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 299 tuples for tableName ORDER_LINE
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 306 tuples for tableName ORDER_LINE
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 306 tuples for tableName ORDER_LINE
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:13 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 304 tuples for tableName ORDER_LINE
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 303 tuples for tableName ORDER_LINE
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 313 tuples for tableName ORDER_LINE
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 330 tuples for tableName ORDER_LINE
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 318 tuples for tableName ORDER_LINE
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 311 tuples for tableName ORDER_LINE
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:14 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=1]:   499 / 1000
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
+08-29-2024 10:12:14 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=1]:   999 / 1000
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
+08-29-2024 10:12:14 [loadWarehouse:099] DEBUG: LOAD - WAREHOUSE: 2 / 4
+08-29-2024 10:12:14 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName WAREHOUSE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 312 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 308 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 309 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 290 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 322 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 292 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 314 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 316 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 283 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 290 tuples for tableName ORDER_LINE
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:15 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=2]:   499 / 1000
+08-29-2024 10:12:15 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
+08-29-2024 10:12:16 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=2]:   999 / 1000
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
+08-29-2024 10:12:16 [loadWarehouse:099] DEBUG: LOAD - WAREHOUSE: 3 / 4
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName WAREHOUSE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 321 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 286 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 315 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 278 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 342 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 302 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 313 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 290 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 304 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 286 tuples for tableName ORDER_LINE
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:16 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=3]:   499 / 1000
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
+08-29-2024 10:12:17 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=3]:   999 / 1000
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
+08-29-2024 10:12:17 [loadWarehouse:099] DEBUG: LOAD - WAREHOUSE: 4 / 4
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName WAREHOUSE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 282 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 287 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 318 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 298 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 292 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 327 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 303 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 305 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 290 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 1 tuples for tableName DISTRICT
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName CUSTOMER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName ORDERS
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 307 tuples for tableName ORDER_LINE
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 9 tuples for tableName NEW_ORDER
+08-29-2024 10:12:17 [loadTuples:157] DEBUG: Loaded 30 tuples for tableName HISTORY
+08-29-2024 10:12:18 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=4]:   499 / 1000
+08-29-2024 10:12:18 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
+08-29-2024 10:12:18 [loadWarehouse:169] DEBUG: LOAD - STOCK [W_ID=4]:   999 / 1000
+08-29-2024 10:12:18 [loadTuples:157] DEBUG: Loaded 500 tuples for tableName STOCK
+08-29-2024 10:12:18 [loadFinish:164] INFO : Commiting changes to database
+08-29-2024 11:52:34 [<module>:245] DEBUG: Using default configuration for typedb
+08-29-2024 11:52:34 [<module>:252] INFO : Reseting database
+08-29-2024 11:56:11 [<module>:245] DEBUG: Using default configuration for typedb
+08-29-2024 11:56:11 [<module>:252] INFO : Reseting database
+08-29-2024 11:58:10 [<module>:245] DEBUG: Using default configuration for typedb
+08-29-2024 11:58:10 [<module>:252] INFO : Reseting database
+08-29-2024 12:03:01 [<module>:245] DEBUG: Using default configuration for typedb
+08-29-2024 12:03:01 [<module>:252] INFO : Reseting database
+08-29-2024 12:03:28 [<module>:245] DEBUG: Using default configuration for typedb
+08-29-2024 12:03:28 [<module>:252] INFO : Reseting database
+08-29-2024 12:06:57 [<module>:245] DEBUG: Using default configuration for typedb
+08-29-2024 12:06:57 [<module>:252] INFO : Reseting database
+08-29-2024 12:08:00 [loadConfig:164] DEBUG: Creating database'tpcc'
+08-29-2024 12:08:33 [loadConfig:167] DEBUG: Loading schema file'tql/tpcc-schema.tql'
+08-29-2024 12:09:46 [loadConfig:172] DEBUG: Writing schema
+08-29-2024 12:17:00 [loadConfig:176] DEBUG: Committed schema
+08-29-2024 12:17:08 [<module>:255] INFO : Initializing TPC-C benchmark using TypedbDriver
+08-29-2024 12:17:12 [<module>:260] DEBUG: Scale Parameters:
+1000 items
+4 warehouses
+10 districts/warehouse
+30 customers/district
+9 initial new orders/district
+08-29-2024 12:17:20 [<module>:265] INFO : Loading TPC-C benchmark data using TypedbDriver

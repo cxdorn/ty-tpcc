@@ -4,6 +4,16 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
+
+        {
+            "name": "TypeDB TPCC",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
+            "console": "integratedTerminal",
+            "args": "--scalefactor=100 --no-execute --debug --reset typedb"
+        },
         {
             "name": "SQLite TPCC",
             "type": "debugpy",
@@ -11,14 +21,6 @@
             "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
             "console": "integratedTerminal",
             "args": "--config=/Users/cxdorn/Git/ty-tpcc/pytpcc/sqlite.config --scalefactor=100 --no-execute --debug --reset sqlite"
-        },
-        {
-            "name": "TypeDB TPCC",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "args": "--config=/Users/cxdorn/Git/ty-tpcc/pytpcc/typedb.config --scalefactor=100 --no-execute --debug --reset typedb"
         },
         {
             "name": "Python Debugger: Current File with Chosen Arguments",
