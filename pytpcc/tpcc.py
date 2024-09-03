@@ -277,6 +277,7 @@ if __name__ == '__main__':
         else:
             startLoading(driverClass, scaleParameters, args, config)
         load_time = time.time() - load_start
+        logging.info(f"Finished loading in {load_time} seconds")
     ## IF
 
     ## WORKLOAD DRIVER!!!

@@ -1,36 +1,6 @@
 define
-  DISTRICT_SUPPLIER sub relation,
-    relates warehouse,
-    relates district;
-    
-define
-  DISTRICT_STOCK_INFO sub relation,
-    relates stocking,
-    relates district,
-    owns DS_INFO;
-
-  DS_INFO sub attribute, value string;
-
-define
-  STOCKING sub relation,
-    relates warehouse,
-    relates item,
-    plays DISTRICT_STOCK_INFO:stocking,
-    owns S_QUANTITY,
-    owns S_YTD,
-    owns S_ORDER_CNT,
-    owns S_REMOTE_CNT,
-    owns S_DATA;
-
-  S_QUANTITY sub attribute, value long;
-  S_YTD sub attribute, value long;
-  S_ORDER_CNT sub attribute, value long;
-  S_REMOTE_CNT sub attribute, value long;
-  S_DATA sub attribute, value string;
-
-define
   WAREHOUSE sub entity,
-    plays DISTRICT_SUPPLIER:warehouse,
+    plays DISTRICT:warehouse,
     plays STOCKING:warehouse,
     owns W_ID,
     owns W_NAME,
@@ -52,20 +22,10 @@ define
   W_TAX sub attribute, value double;
   W_YTD sub attribute, value double;
 
-
-define CUSTOMER_LOCATION sub relation,
-  relates customer,
-  relates district;
-
-define ORDER_PLACEMENT sub relation,
-  relates order,
-  relates customer,
-  relates district;
-
-define
-  DISTRICT sub entity,
-    plays DISTRICT_STOCK_INFO:district,
-    plays CUSTOMER_LOCATION:district,
+  DISTRICT sub relation,
+    relates warehouse,
+    plays CUSTOMER:district,
+    plays ORDER:district,
     owns D_ID,
     owns D_NAME,
     owns D_STREET_1,
@@ -88,10 +48,25 @@ define
   D_YTD sub attribute, value double;
   D_NEXT_O_ID sub attribute, value long;
 
-define
-  CUSTOMER sub entity,
-    plays CUSTOMER_LOCATION:customer,
-    plays ORDER_PLACEMENT:customer,
+  ITEM sub entity,
+    plays STOCKING:item,
+    plays ORDER_LINE:item,
+    owns I_ID,
+    owns I_IM_ID,
+    owns I_NAME,
+    owns I_PRICE,
+    owns I_DATA;
+
+  I_ID sub attribute, value long;
+  I_IM_ID sub attribute, value long;
+  I_NAME sub attribute, value string;
+  I_PRICE sub attribute, value double;
+  I_DATA sub attribute, value string;
+
+  CUSTOMER sub relation,
+    relates district,
+    plays ORDER:customer,
+    plays CUSTOMER_HISTORY:customer,
     owns C_ID,
     owns C_FIRST,
     owns C_MIDDLE,
@@ -131,38 +106,25 @@ define
   C_PAYMENT_CNT sub attribute, value long;
   C_DELIVERY_CNT sub attribute, value long;
   C_DATA sub attribute, value string;
-
-
-define
-  HISTORY sub entity,
-    owns H_C_ID,
-    owns H_DATE,
-    owns H_AMOUNT,
-    owns H_DATA;
-
-  H_C_ID sub attribute, value long;
-  H_DATE sub attribute, value datetime;
-  H_AMOUNT sub attribute, value double;
-  H_DATA sub attribute, value string;
-
-
-define
-  ORDERS sub entity,
+ 
+  ORDER sub relation,
+    relates district, 
+    relates customer,
+    plays ORDER_LINE:order,
     owns O_ID,
-    owns O_C_ID,
     owns O_ENTRY_D,
     owns O_CARRIER_ID,
     owns O_OL_CNT,
-    owns O_ALL_LOCAL;
+    owns O_ALL_LOCAL,
+    owns O_NEW_ORDER;
 
   O_ID sub attribute, value long;
-  O_C_ID sub attribute, value long;
   O_ENTRY_D sub attribute, value datetime;
   O_CARRIER_ID sub attribute, value long;
   O_OL_CNT sub attribute, value long;
   O_ALL_LOCAL sub attribute, value long;
+  O_NEW_ORDER sub attribute, value boolean;
 
-define
   ORDER_LINE sub relation,
     relates order,
     relates item,
@@ -179,3 +141,48 @@ define
   OL_QUANTITY sub attribute, value long;
   OL_AMOUNT sub attribute, value double;
   OL_DIST_INFO sub attribute, value string;
+
+  CUSTOMER_HISTORY sub relation,
+    relates customer,
+    owns H_DATE,
+    owns H_AMOUNT,
+    owns H_DATA;
+
+  H_DATE sub attribute, value datetime;
+  H_AMOUNT sub attribute, value double;
+  H_DATA sub attribute, value string;
+
+  STOCKING sub relation,
+    relates warehouse,
+    relates item,
+    owns S_QUANTITY,
+    owns S_YTD,
+    owns S_ORDER_CNT,
+    owns S_REMOTE_CNT,
+    owns S_DATA,
+    owns S_DIST_1,
+    owns S_DIST_2,
+    owns S_DIST_3,
+    owns S_DIST_4,
+    owns S_DIST_5,
+    owns S_DIST_6,
+    owns S_DIST_7,
+    owns S_DIST_8,
+    owns S_DIST_9,
+    owns S_DIST_10;
+
+  S_QUANTITY sub attribute, value long;
+  S_YTD sub attribute, value long;
+  S_ORDER_CNT sub attribute, value long;
+  S_REMOTE_CNT sub attribute, value long;
+  S_DATA sub attribute, value string;
+  S_DIST_1 sub attribute, value string;
+  S_DIST_2 sub attribute, value string;
+  S_DIST_3 sub attribute, value string;
+  S_DIST_4 sub attribute, value string;
+  S_DIST_5 sub attribute, value string;
+  S_DIST_6 sub attribute, value string;
+  S_DIST_7 sub attribute, value string;
+  S_DIST_8 sub attribute, value string;
+  S_DIST_9 sub attribute, value string;
+  S_DIST_10 sub attribute, value string;

@@ -4,15 +4,21 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
-
         {
-            "name": "TypeDB TPCC",
+            "name": "TypeDB TPCC Only Load",
             "type": "debugpy",
             "request": "launch",
             "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
             "console": "integratedTerminal",
-            "args": "--scalefactor=100 --no-execute --debug --reset typedb"
+            "args": "--scalefactor=10 --no-execute --debug --reset --clients=8 typedb"
+        },
+        {
+            "name": "TypeDB TPCC Only Execute",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
+            "console": "integratedTerminal",
+            "args": "--scalefactor=10 --no-load --debug --clients=1 typedb"
         },
         {
             "name": "SQLite TPCC",
@@ -20,7 +26,7 @@
             "request": "launch",
             "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
             "console": "integratedTerminal",
-            "args": "--config=/Users/cxdorn/Git/ty-tpcc/pytpcc/sqlite.config --scalefactor=100 --no-execute --debug --reset sqlite"
+            "args": "--config=/Users/cxdorn/Git/ty-tpcc/pytpcc/sqlite.config --scalefactor=10 --no-execute --debug --reset sqlite"
         },
         {
             "name": "Python Debugger: Current File with Chosen Arguments",

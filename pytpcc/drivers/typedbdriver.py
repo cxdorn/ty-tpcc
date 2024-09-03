@@ -1,32 +1,12 @@
 # -*- coding: utf-8 -*-
-# -----------------------------------------------------------------------
-# Copyright (C) 2011
-# Andy Pavlo
-# http://www.cs.brown.edu/~pavlo/
-#
-# Original Java Version:
-# Copyright (C) 2008
-# Evan Jones
-# Massachusetts Institute of Technology
-#
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-#
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
-# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
+# TODO:
+# - Create faster IDs (no traversal):
+#   - D = W * 10 + D
+#   - C = D * 3000 + C
+# - Hardcode DS_INFO
+# - Customer of distict
+# - Order of customer
+# - Orderline of order
 # -----------------------------------------------------------------------
 
 from __future__ import with_statement
@@ -36,6 +16,7 @@ import sqlite3
 import logging
 import subprocess
 from pprint import pprint,pformat
+import time
 from typedb.driver import TypeDB, SessionType, TransactionType, TypeDBOptions, TypeDBCredential
 
 import sys
@@ -47,6 +28,9 @@ from enum import Enum
 class EDITION(Enum):
     Cloud = 1
     Core = 2
+
+DPW = constants.DISTRICTS_PER_WAREHOUSE
+CPD = constants.CUSTOMERS_PER_DISTRICT
 
 TXN_QUERIES = {
     "DELIVERY": {
@@ -61,28 +45,32 @@ TXN_QUERIES = {
 
     "NEW_ORDER": {
         # match
-        #  $i isa ITEM, has I_ID %i_id, has I_PRICE $i_price;
-        #  $w isa WAREHOUSE, has W_ID %w_id;
-        #  (item: $i, warehouse: $w) isa STOCK, has S_QUANTITY $s_quantity, has S_DIST_%02d $s_dist_xx;
-        # get $i_price, $stock_level, $s_dist_xx;
+        #  $i isa ITEM, has I_ID {i_id}, has I_PRICE $i_price;
+        #  $w isa WAREHOUSE, has W_ID {w_id};
+        #  $d (warehouse: $w) isa DISTRICT, has D_ID %d_id;
+        #  $s (item: $i, warehouse: $w) isa STOCKING, has S_QUANTITY $s_quantity;
+        #  (stocking: $s, district: $d) isa DISTRICT_STOCK_INFO, has DS_INFO $ds_info;
+        # get $i_price, $s_quantity, $ds_info;
         #
         # match 
-        #  $w isa WAREHOUSE, has W_ID %w_id, has W_TAX $w_tax;
-        #  (district: $d, warehouse: $w) isa DISTRICT_SUPPLIER; 
-        #  $d has D_ID %d_id, has D_NEXT_O_ID $d_next_o_id;
+        #  $w isa WAREHOUSE, has W_ID {w_id}, has W_TAX $w_tax;
+        #  $c (district: $d) isa CUSTOMER;
+        #  $d (warehouse: $w) isa DISTRICT, has D_ID {d_id}, has D_NEXT_O_ID $d_next_o_id;
+        #  ?d_next_o_id_old = $d_next_o_id;
         #  ?d_next_o_id_new = $d_next_o_id + 1;
-        #  (customer: $c, district: $d) isa CUSTOMER_LOCATION;
         #  $c has C_ID $c_id, C_DISCOUNT $c_discount, C_LAST $c_last, C_CREDIT $c_credit;
         #  $i isa ITEM, has I_ID %i_id, has I_PRICE $i_price;  # repeat for each item
+        # delete
+        #  $d has $d_next_o_id;
         # insert
-        #  $o isa ORDER, 
-        #    has O_ID $d_next_o_id,
+        #  $d has D_NEXT_O_ID $d_next_o_id_new;
+        #  $o (customer: $c, district: $d) isa ORDER, 
+        #    has O_ID ?d_next_o_id,
         #    has O_ENTRY_D %o_entry_d, 
         #    has O_CARRIED_ID %o_carrier_id, 
         #    has O_OL_CNT %o_ol_cnt, 
         #    has O_ALL_LOCAL %o_all_local,
         #    has O_NEW true,
-        #  (order: $o, district: $d, customer: $c) isa ORDER_PLACEMENT;
         #  (order: $o, item: $i) isa ORDER_LINE;
         #   
         # match 
@@ -156,6 +144,8 @@ class TypedbDriver(AbstractDriver):
         self.user = None
         self.password = None
         self.driver = None
+        self.session = None
+        self.tx = None
     
     ## ----------------------------------------------
     ## makeDefaultConfig
@@ -204,77 +194,283 @@ class TypedbDriver(AbstractDriver):
                     tx.commit()
                 logging.debug("Committed schema")
         ## IF
-        
+    ## ----------------------------------------------
+    ## loadStart
+    ## ----------------------------------------------
+    def loadStart(self):
+        self.session = self.driver.session(self.database, SessionType.DATA)
+        return None 
+
     ## ----------------------------------------------
     ## loadTuples
     ## ----------------------------------------------
     def loadTuples(self, tableName, tuples):
         if len(tuples) == 0: return
-        
-        p = ["?"]*len(tuples[0])
-        sql = "INSERT INTO %s VALUES (%s)" % (tableName, ",".join(p))
-        self.cursor.executemany(sql, tuples)
-        
-        logging.debug("Loaded %d tuples for tableName %s" % (len(tuples), tableName))
+
+        with self.session.transaction(TransactionType.WRITE) as tx:
+            write_query = [ ]
+            is_update = False;
+
+            if tableName == "WAREHOUSE":
+                for tuple in tuples:
+                    w_id = tuple[0]
+                    w_name = tuple[1]
+                    w_street_1 = tuple[2]
+                    w_street_2 = tuple[3]
+                    w_city = tuple[4]
+                    w_state = tuple[5]
+                    w_zip = tuple[6]
+                    w_tax = tuple[7]
+                    w_ytd = tuple[8]
+
+                    q = f"""
+insert 
+$warehouse isa WAREHOUSE, 
+has W_ID {w_id}, has W_NAME "{w_name}", has W_STREET_1 "{w_street_1}", 
+has W_STREET_2 "{w_street_2}", has W_CITY "{w_city}", has W_STATE "{w_state}", 
+has W_ZIP "{w_zip}", has W_TAX {w_tax}, has W_YTD {w_ytd};"""
+                    write_query.append(q)
+
+            if tableName == "DISTRICT":
+                for tuple in tuples:
+                    d_id = tuple[0]
+                    d_w_id = tuple[1]
+                    d_name = tuple[2]
+                    d_street_1 = tuple[3]
+                    d_street_2 = tuple[4]
+                    d_city = tuple[5]
+                    d_state = tuple[6]
+                    d_zip = tuple[7]
+                    d_tax = tuple[8]
+                    d_ytd = tuple[9]
+                    d_next_o_id = tuple[10]
+
+                    q = f"""
+match 
+$w isa WAREHOUSE, has W_ID {d_w_id};
+insert 
+$district (warehouse: $w) isa DISTRICT,
+has D_ID {d_w_id * DPW + d_id}, has D_NAME "{d_name}",
+has D_STREET_1 "{d_street_1}", has D_STREET_2 "{d_street_2}",
+has D_CITY "{d_city}", has D_STATE "{d_state}", has D_ZIP "{d_zip}",
+has D_TAX {d_tax}, has D_YTD {d_ytd}, has D_NEXT_O_ID {d_next_o_id};"""
+                    write_query.append(q)
+
+            if tableName == "ITEM":
+                for tuple in tuples:
+                    i_id = tuple[0]
+                    i_im_id = tuple[1]
+                    i_name = tuple[2]
+                    i_price = tuple[3]
+                    i_data = tuple[4]
+
+                    q = f"""
+insert 
+$item isa ITEM,
+has I_ID {i_id}, has I_IM_ID {i_im_id}, has I_NAME "{i_name}",
+has I_PRICE {i_price}, has I_DATA "{i_data}";"""
+                    write_query.append(q)
+
+            if tableName == "CUSTOMER":
+                for tuple in tuples:
+                    c_id = tuple[0]
+                    c_d_id = tuple[1]
+                    c_w_id = tuple[2]
+                    c_first = tuple[3]
+                    c_middle = tuple[4]
+                    c_last = tuple[5]
+                    c_street_1 = tuple[6]
+                    c_street_2 = tuple[7]
+                    c_city = tuple[8]
+                    c_state = tuple[9]
+                    c_zip = tuple[10]
+                    c_phone = tuple[11]
+                    c_since = tuple[12].isoformat()[:-3]
+                    c_credit = tuple[13]
+                    c_credit_lim = tuple[14]
+                    c_discount = tuple[15]
+                    c_balance = tuple[16]
+                    c_ytd_payment = tuple[17]
+                    c_payment_cnt = tuple[18]
+                    c_delivery_cnt = tuple[19]
+                    c_data = tuple[20]
+
+                    q = f"""
+match
+$d isa DISTRICT, has D_ID {c_w_id * DPW + c_d_id};
+insert 
+$customer (district: $d) isa CUSTOMER,
+has C_ID {c_w_id * DPW * CPD + c_d_id * CPD + c_id}, 
+has C_FIRST "{c_first}", has C_MIDDLE "{c_middle}", has C_LAST "{c_last}",
+has C_STREET_1 "{c_street_1}", has C_STREET_2 "{c_street_2}",
+has C_CITY "{c_city}", has C_STATE "{c_state}", has C_ZIP "{c_zip}",
+has C_PHONE "{c_phone}", has C_SINCE {c_since}, has C_CREDIT "{c_credit}",
+has C_CREDIT_LIM {c_credit_lim}, has C_DISCOUNT {c_discount},
+has C_BALANCE {c_balance}, has C_YTD_PAYMENT {c_ytd_payment},
+has C_PAYMENT_CNT {c_payment_cnt}, has C_DELIVERY_CNT {c_delivery_cnt},
+has C_DATA "{c_data}";"""
+                    write_query.append(q)
+
+            if tableName == "ORDERS":
+                for tuple in tuples:
+                    o_id = tuple[0]
+                    o_c_id = tuple[1]
+                    o_d_id = tuple[2]
+                    o_w_id = tuple[3]
+                    o_entry_d = tuple[4].isoformat()[:-3]
+                    o_carrier_id = tuple[5]
+                    o_ol_cnt = tuple[6]
+                    o_all_local = tuple[7]
+
+                    q = f"""
+match 
+$c isa CUSTOMER, has C_ID {o_w_id * DPW * CPD + o_d_id * CPD + o_c_id};
+insert 
+$order (customer: $c) isa ORDER,
+has O_ID {o_id},
+has O_ENTRY_D {o_entry_d}, has O_CARRIER_ID {o_carrier_id},
+has O_OL_CNT {o_ol_cnt}, has O_ALL_LOCAL {o_all_local}, has O_NEW_ORDER false;"""
+                    write_query.append(q)
+
+            if tableName == "NEW_ORDER":
+                is_update = True;
+                for tuple in tuples:
+                    no_o_id = tuple[0]
+                    no_d_id = tuple[1]
+                    no_w_id = tuple[2]
+
+                    q = f"""
+match 
+$d isa DISTRICT, has D_ID {no_w_id * DPW + no_d_id};
+$order (district: $d) isa ORDER, has O_ID {no_o_id}, has O_NEW_ORDER $status;
+delete $order has $status;
+insert $order has O_NEW_ORDER true;
+"""
+                    write_query.append(q)
+
+            if tableName == "ORDER_LINE":
+                for tuple in tuples:
+                    ol_o_id = tuple[0]
+                    ol_d_id = tuple[1]
+                    ol_w_id = tuple[2]
+                    ol_number = tuple[3]
+                    ol_i_id = tuple[4]
+                    ol_supply_w_id = tuple[5]
+                    # See TPCC Spec: delivery date may be null
+                    if tuple[6] is not None:
+                        has_ol_delivery_d = f"has OL_DELIVERY_D {tuple[6].isoformat()[:-3]},"
+                    else:
+                        has_ol_delivery_d = ""
+                    ol_quantity = tuple[7]
+                    ol_amount = tuple[8]
+                    ol_dist_info = tuple[9]
+
+                    q = f"""
+match 
+$w isa WAREHOUSE, has W_ID {ol_w_id};
+$d isa DISTRICT, has D_ID {ol_w_id * DPW + ol_d_id};
+$order (district: $d) isa ORDER, has O_ID {ol_o_id};
+$item has I_ID {ol_i_id};
+insert 
+$order_line (order: $order, item: $item) isa ORDER_LINE,
+has OL_NUMBER {ol_number}, has OL_SUPPLY_W_ID {ol_supply_w_id},
+""" + has_ol_delivery_d + f"""
+has OL_QUANTITY {ol_quantity}, has OL_AMOUNT {ol_amount},
+has OL_DIST_INFO "{ol_dist_info}";
+"""
+                    write_query.append(q)
+    
+            if tableName == "STOCK":
+                for tuple in tuples:
+                    s_i_id = tuple[0]
+                    s_w_id = tuple[1]
+                    s_quantity = tuple[2]
+                    s_ytd = tuple[13]
+                    s_order_cnt = tuple[14]
+                    s_remote_cnt = tuple[15]
+                    s_data = tuple[16]
+
+                    q_stock = f"""
+match 
+$i isa ITEM, has I_ID {s_i_id};   
+$w isa WAREHOUSE, has W_ID {s_w_id};
+insert 
+$stock (item: $i, warehouse: $w) isa STOCKING, 
+has S_QUANTITY {s_quantity}, has S_YTD {s_ytd}, has S_ORDER_CNT {s_order_cnt},
+has S_REMOTE_CNT {s_remote_cnt}, has S_DATA "{s_data}";"""
+                    write_query.append(q_stock)
+    
+                    for i in range(1, 11):
+
+                        q_stock_info = f"""
+match 
+$i isa ITEM, has I_ID {s_i_id};
+$w isa WAREHOUSE, has W_ID {s_w_id};   
+$stock (item: $i, warehouse: $w) isa STOCKING;
+insert
+$stock has S_DIST_{i} "{tuple[2+i]}";"""
+                        write_query.append(q_stock_info)
+
+    
+            if tableName == "HISTORY":
+                for tuple in tuples:
+                    h_c_id = tuple[0]
+                    h_d_id = tuple[3]
+                    h_w_id = tuple[4]
+                    h_date = tuple[5].isoformat()[:-3]
+                    h_amount = tuple[6]
+                    h_data = tuple[7]
+    
+                    q = f"""
+match 
+$c isa CUSTOMER, has C_ID {h_w_id * DPW * CPD + h_d_id * CPD + h_c_id};
+insert 
+$history (customer: $c) isa CUSTOMER_HISTORY,
+has H_DATE {h_date}, has H_AMOUNT {h_amount}, has H_DATA "{h_data}";"""
+                    write_query.append(q)
+    
+            for query in write_query:
+                if is_update:
+                    tx.query.update(query)
+                else:
+                    tx.query.insert(query)
+
+            if tableName == "STOCK":
+                full_query = "\n".join(write_query)
+                with open(f"full_query_{tableName}.tql", "w") as f:
+                    f.write(full_query)
+ 
+            logging.info("Committing %d queries for type %s" % (len(tuples), tableName))
+            start_time = time.time()
+            tx.commit()
+            logging.info(f"Committed! Time per query: {(time.time() - start_time) / len(tuples)}")
         return
 
     ## ----------------------------------------------
     ## loadFinish
     ## ----------------------------------------------
     def loadFinish(self):
-        logging.info("Commiting changes to database")
-        self.driver.commit()
-
-    ## ----------------------------------------------
-    ## doDelivery
-    ## ----------------------------------------------
-    def doDelivery(self, params):
-        q = TXN_QUERIES["DELIVERY"]
-        
-        w_id = params["w_id"]
-        o_carrier_id = params["o_carrier_id"]
-        ol_delivery_d = params["ol_delivery_d"]
-
-        result = [ ]
-        for d_id in range(1, constants.DISTRICTS_PER_WAREHOUSE+1):
-            self.cursor.execute(q["getNewOrder"], [d_id, w_id])
-            newOrder = self.cursor.fetchone()
-            if newOrder == None:
-                ## No orders for this district: skip it. Note: This must be reported if > 1%
-                continue
-            assert newOrder is not None
-            no_o_id = newOrder[0]
-            
-            self.cursor.execute(q["getCId"], [no_o_id, d_id, w_id])
-            c_id = self.cursor.fetchone()[0]
-            
-            self.cursor.execute(q["sumOLAmount"], [no_o_id, d_id, w_id])
-            ol_total = self.cursor.fetchone()[0]
-
-            self.cursor.execute(q["deleteNewOrder"], [d_id, w_id, no_o_id])
-            self.cursor.execute(q["updateOrders"], [o_carrier_id, no_o_id, d_id, w_id])
-            self.cursor.execute(q["updateOrderLine"], [ol_delivery_d, no_o_id, d_id, w_id])
-
-            # These must be logged in the "result file" according to TPC-C 2.7.2.2 (page 39)
-            # We remove the queued time, completed time, w_id, and o_carrier_id: the client can figure
-            # them out
-            # If there are no order lines, SUM returns null. There should always be order lines.
-            assert ol_total != None, "ol_total is NULL: there are no order lines. This should not happen"
-            assert ol_total > 0.0
-
-            self.cursor.execute(q["updateCustomer"], [ol_total, c_id, d_id, w_id])
-
-            result.append((d_id, no_o_id))
-        ## FOR
-
-        self.driver.commit()
-        return (result,0)
+        logging.info("Closing write session")
+        self.session.close()
+        return None
 
     ## ----------------------------------------------
     ## doNewOrder
     ## ----------------------------------------------
     def doNewOrder(self, params):
-        q = TXN_QUERIES["NEW_ORDER"]
+        # For reference, the SQL queries are:
+        # q = { 
+        #     "getItemInfo": "SELECT I_PRICE, I_NAME, I_DATA FROM ITEM WHERE I_ID = ?", # ol_i_id
+        #     "getWarehouseTaxRate": "SELECT W_TAX FROM WAREHOUSE WHERE W_ID = ?", # w_id
+        #     "getDistrict": "SELECT D_TAX, D_NEXT_O_ID FROM DISTRICT WHERE D_ID = ? AND D_W_ID = ?", # d_id, w_id
+        #     "incrementNextOrderId": "UPDATE DISTRICT SET D_NEXT_O_ID = ? WHERE D_ID = ? AND D_W_ID = ?", # d_next_o_id, d_id, w_id
+        #     "getCustomer": "SELECT C_DISCOUNT, C_LAST, C_CREDIT FROM CUSTOMER WHERE C_W_ID = ? AND C_D_ID = ? AND C_ID = ?", # w_id, d_id, c_id
+        #     "createOrder": "INSERT INTO ORDERS (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", # d_next_o_id, d_id, w_id, c_id, o_entry_d, o_carrier_id, o_ol_cnt, o_all_local
+        #     "createNewOrder": "INSERT INTO NEW_ORDER (NO_O_ID, NO_D_ID, NO_W_ID) VALUES (?, ?, ?)", # o_id, d_id, w_id
+        #     "getStockInfo": "SELECT S_QUANTITY, S_DATA, S_YTD, S_ORDER_CNT, S_REMOTE_CNT, S_DIST_%02d FROM STOCK WHERE S_I_ID = ? AND S_W_ID = ?", # d_id, ol_i_id, ol_supply_w_id
+        #     "updateStock": "UPDATE STOCK SET S_QUANTITY = ?, S_YTD = ?, S_ORDER_CNT = ?, S_REMOTE_CNT = ? WHERE S_I_ID = ? AND S_W_ID = ?", # s_quantity, s_order_cnt, s_remote_cnt, ol_i_id, ol_supply_w_id
+        #     "createOrderLine": "INSERT INTO ORDER_LINE (OL_O_ID, OL_D_ID, OL_W_ID, OL_NUMBER, OL_I_ID, OL_SUPPLY_W_ID, OL_DELIVERY_D, OL_QUANTITY, OL_AMOUNT, OL_DIST_INFO) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", # o_id, d_id, w_id, ol_number, ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_dist_info        
+        # }
         
         w_id = params["w_id"]
         d_id = params["d_id"]
@@ -289,115 +485,230 @@ class TypedbDriver(AbstractDriver):
         assert len(i_ids) == len(i_qtys)
 
         all_local = True
-        items = [ ]
-        for i in range(len(i_ids)):
-            ## Determine if this is an all local order or not
-            all_local = all_local and i_w_ids[i] == w_id
-            self.cursor.execute(q["getItemInfo"], [i_ids[i]])
-            items.append(self.cursor.fetchone())
-        assert len(items) == len(i_ids)
-        
-        ## TPCC defines 1% of neworder gives a wrong itemid, causing rollback.
-        ## Note that this will happen with 1% of transactions on purpose.
-        for item in items:
-            if item is None:
-                ## TODO Abort here!
-                return (None,0)
-        ## FOR
-        
-        ## ----------------
-        ## Collect Information from WAREHOUSE, DISTRICT, and CUSTOMER
-        ## ----------------
-        self.cursor.execute(q["getWarehouseTaxRate"], [w_id])
-        w_tax = self.cursor.fetchone()[0]
-        
-        self.cursor.execute(q["getDistrict"], [d_id, w_id])
-        district_info = self.cursor.fetchone()
-        d_tax = district_info[0]
-        d_next_o_id = district_info[1]
-        
-        self.cursor.execute(q["getCustomer"], [w_id, d_id, c_id])
-        customer_info = self.cursor.fetchone()
-        c_discount = customer_info[0]
-
-        ## ----------------
-        ## Insert Order Information
-        ## ----------------
-        ol_cnt = len(i_ids)
-        o_carrier_id = constants.NULL_CARRIER_ID
-        
-        self.cursor.execute(q["incrementNextOrderId"], [d_next_o_id + 1, d_id, w_id])
-        self.cursor.execute(q["createOrder"], [d_next_o_id, d_id, w_id, c_id, o_entry_d, o_carrier_id, ol_cnt, all_local])
-        self.cursor.execute(q["createNewOrder"], [d_next_o_id, d_id, w_id])
-
-        ## ----------------
-        ## Insert Order Item Information
-        ## ----------------
-        item_data = [ ]
         total = 0
+        items = [{ }]
+        item_data = [ ]
+        ## Determine if this is an all local order or not
         for i in range(len(i_ids)):
-            ol_number = i + 1
-            ol_supply_w_id = i_w_ids[i]
-            ol_i_id = i_ids[i]
-            ol_quantity = i_qtys[i]
+            all_local = all_local and i_w_ids[i] == w_id
+        assert len(items) == len(i_ids)
 
-            itemInfo = items[i]
-            i_name = itemInfo[1]
-            i_data = itemInfo[2]
-            i_price = itemInfo[0]
+        with self.driver.session(self.database, SessionType.DATA) as data_session:
+            with data_session.transaction(TransactionType.WRITE) as tx:
+                for i in range(len(i_ids)):
+                    item = tx.query.get(f"match $i isa ITEM, has I_ID {i_ids[i]}, has I_NAME $i_name, has I_PRICE $i_price, has I_DATA $i_data; get $i_name, $i_price, $i_data;")
+                    if len(item) == 0:
+                        return (None, 0)
+                    items[i]['name'] = item.get('i_name').as_attribute().get_value()
+                    items[i]['price'] = item.get('i_price').as_attribute().get_value()
+                    items[i]['data'] = item.get('i_data').as_attribute().get_value()
 
-            self.cursor.execute(q["getStockInfo"] % (d_id), [ol_i_id, ol_supply_w_id])
-            stockInfo = self.cursor.fetchone()
-            if len(stockInfo) == 0:
-                logging.warn("No STOCK record for (ol_i_id=%d, ol_supply_w_id=%d)" % (ol_i_id, ol_supply_w_id))
-                continue
-            s_quantity = stockInfo[0]
-            s_ytd = stockInfo[2]
-            s_order_cnt = stockInfo[3]
-            s_remote_cnt = stockInfo[4]
-            s_data = stockInfo[1]
-            s_dist_xx = stockInfo[5] # Fetches data from the s_dist_[d_id] column
+                # Query: get warhouse, district, and customer info
+                # TODO: potentially remove conditions for speed
+                q = f"""
+match 
+$w isa WAREHOUSE, has W_ID {w_id}, has W_TAX $w_tax;
+$d isa DISTRICT, has D_ID {w_id * DPW + d_id}, has D_TAX $d_tax, has D_NEXT_O_ID $d_next_o_id;
+$c isa CUSTOMER, has C_ID {w_id * DPW * CPD + d_id * CPD + c_id}, has C_DISCOUNT $c_discount, has C_LAST $c_last, has C_CREDIT $c_credit;
+(customer: $c, district: $d) isa CUSTOMER_LOCATION;
+get $w_tax, $d_tax, $d_next_o_id, $c_discount, $c_last, $c_credit;"""
+                general_info = tx.query.get(q)
+                
+                if len(general_info) == 0:
+                    logging.warn("No general info for warehouse %d" % w_id)
+                    return (None, 0)
+                w_tax = general_info[0].get('w_tax').as_attribute().get_value()
+                d_tax = general_info[0].get('d_tax').as_attribute().get_value()
+                d_next_o_id = general_info[0].get('d_next_o_id').as_attribute().get_value()
+                c_discount = general_info[0].get('c_discount').as_attribute().get_value()
+                c_last = general_info[0].get('c_last').as_attribute().get_value()
+                c_credit = general_info[0].get('c_credit').as_attribute().get_value()
 
-            ## Update stock
-            s_ytd += ol_quantity
-            if s_quantity >= ol_quantity + 10:
-                s_quantity = s_quantity - ol_quantity
-            else:
-                s_quantity = s_quantity + 91 - ol_quantity
-            s_order_cnt += 1
-            
-            if ol_supply_w_id != w_id: s_remote_cnt += 1
+                ol_cnt = len(i_ids)
+                o_carrier_id = constants.NULL_CARRIER_ID
 
-            self.cursor.execute(q["updateStock"], [s_quantity, s_ytd, s_order_cnt, s_remote_cnt, ol_i_id, ol_supply_w_id])
+                # Query: update district's next order id, and create new order
+                # TODO: experiment with constraining further
+                q = f"""
+match 
+$d isa DISTRICT, has D_ID {w_id * DPW + d_id}, has D_NEXT_O_ID $d_next_o_id;
+$c isa CUSTOMER, has C_ID {w_id * DPW * CPD + d_id * CPD + c_id};
+delete 
+$d has $d_next_o_id;
+insert 
+$d has D_NEXT_O_ID {d_next_o_id + 1};
+$order (district: $d, customer: $c) isa ORDER,
+has O_ID {d_next_o_id},
+has O_ENTRY_D {o_entry_d}, has O_CARRIER_ID {o_carrier_id},
+has O_OL_CNT {ol_cnt}, has O_ALL_LOCAL {all_local}, has O_NEW_ORDER true;"""
+                tx.query.update(q)
 
-            if i_data.find(constants.ORIGINAL_STRING) != -1 and s_data.find(constants.ORIGINAL_STRING) != -1:
-                brand_generic = 'B'
-            else:
-                brand_generic = 'G'
+                for i in range(len(i_ids)):
+                    ol_number = i + 1
+                    ol_supply_w_id = i_w_ids[i]
+                    ol_i_id = i_ids[i]
+                    ol_quantity = i_qtys[i]
 
-            ## Transaction profile states to use "ol_quantity * i_price"
-            ol_amount = ol_quantity * i_price
-            total += ol_amount
+                    i_name = items[i]['name']
+                    i_data = items[i]['data']
+                    i_price = items[i]['price']
 
-            self.cursor.execute(q["createOrderLine"], [d_next_o_id, d_id, w_id, ol_number, ol_i_id, ol_supply_w_id, o_entry_d, ol_quantity, ol_amount, s_dist_xx])
+                    # Query: get stock info of item i
+                    q = f"""
+match
+$i isa ITEM, has I_ID {ol_i_id}; 
+$w isa WAREHOUSE, has W_ID {ol_supply_w_id};
+$s (item: $i, warehouse: $w) isa STOCKING, 
+    has S_QUANTITY $s_quantity, has S_DATA $s_data, has S_YTD $s_ytd, 
+    has S_ORDER_CNT $s_order_cnt, has S_REMOTE_CNT $s_remote_cnt, 
+    has S_DIST_{d_id} $s_dist_xx;
+get $s_quantity, $s_data, $s_ytd, $s_order_cnt, $s_remote_cnt, $s_dist_xx;"""
+                    stock_info = tx.query.get(q)
 
-            ## Add the info to be returned
-            item_data.append( (i_name, s_quantity, brand_generic, i_price, ol_amount) )
-        ## FOR
+                    if len(stock_info) == 0:
+                        logging.warn("No STOCK record for (ol_i_id=%d, ol_supply_w_id=%d)" % (ol_i_id, ol_supply_w_id))
+                        continue
+                    s_quantity = stock_info[0].get('s_quantity').as_attribute().get_value()
+                    s_data = stock_info[0].get('s_data').as_attribute().get_value()
+                    s_ytd = stock_info[0].get('s_ytd').as_attribute().get_value()
+                    s_order_cnt = stock_info[0].get('s_order_cnt').as_attribute().get_value()
+                    s_remote_cnt = stock_info[0].get('s_remote_cnt').as_attribute().get_value()
+                    s_dist_xx = stock_info[0].get('s_dist_xx').as_attribute().get_value()
+                    
+                    # Compute auxilliary values
+                    s_ytd += ol_quantity
+                    if s_quantity >= ol_quantity + 10:
+                        s_quantity = s_quantity - ol_quantity
+                    else:
+                        s_quantity = s_quantity + 91 - ol_quantity
+                    s_order_cnt += 1
+                    
+                    if ol_supply_w_id != w_id: s_remote_cnt += 1
+
+                    if i_data.find(constants.ORIGINAL_STRING) != -1 and s_data.find(constants.ORIGINAL_STRING) != -1:
+                        brand_generic = 'B'
+                    else:
+                        brand_generic = 'G'
+
+                    # Query: update stock info of item i
+                    q = f"""
+match
+$i isa ITEM, has I_ID {ol_i_id};
+$w isa WAREHOUSE, has W_ID {ol_supply_w_id};
+$d isa DISTRICT, has D_ID {w_id * DPW + d_id};
+$o (district: $d) isa ORDER, has O_ID {d_next_o_id};
+$s (item: $i, warehouse: $w) isa STOCKING, has S_QUANTITY $s_quantity;
+delete $s has $s_quantity;
+insert $s has S_QUANTITY {s_quantity}, has S_YTD {s_ytd}, 
+has S_ORDER_CNT {s_order_cnt}, has S_REMOTE_CNT {s_remote_cnt};
+(item: $i, order: $o) isa ORDER_LINE, 
+has OL_NUMBER {ol_number}, has OL_SUPPLY_W_ID {ol_supply_w_id}, 
+has OL_DELIVERY_D {o_entry_d}, has OL_QUANTITY {ol_quantity}, 
+has OL_AMOUNT {ol_amount}, has OL_DIST_INFO {s_dist_xx};"""
+                    tx.query.update(q)
+
+                    ## Transaction profile states to use "ol_quantity * i_price"
+                    ol_amount = ol_quantity * i_price
+                    total += ol_amount
         
-        ## Commit!
-        self.driver.commit()
+                    ## Add the info to be returned
+                    item_data.append( (i_name, s_quantity, brand_generic, i_price, ol_amount) )
+                ## FOR
+                tx.commit()
+                total *= (1 - c_discount) * (1 + w_tax + d_tax)
 
-        ## Adjust the total for the discount
-        #print "c_discount:", c_discount, type(c_discount)
-        #print "w_tax:", w_tax, type(w_tax)
-        #print "d_tax:", d_tax, type(d_tax)
-        total *= (1 - c_discount) * (1 + w_tax + d_tax)
+                ## Pack up values the client is missing (see TPC-C 2.4.3.5)
+                misc = [ (w_tax, d_tax, d_next_o_id, total) ]
+                return ([ [c_discount, c_last, c_credit], misc, item_data ], 0)
+            ## WITH
+        ## WITH
 
-        ## Pack up values the client is missing (see TPC-C 2.4.3.5)
-        misc = [ (w_tax, d_tax, d_next_o_id, total) ]
+    ## ----------------------------------------------
+    ## doDelivery
+    ## ----------------------------------------------
+    def doDelivery(self, params):
+        q = { 
+            "getNewOrder": "SELECT NO_O_ID FROM NEW_ORDER WHERE NO_D_ID = ? AND NO_W_ID = ? AND NO_O_ID > -1 LIMIT 1", #
+            "getCId": "SELECT O_C_ID FROM ORDERS WHERE O_ID = ? AND O_D_ID = ? AND O_W_ID = ?", # no_o_id, d_id, w_id
+            "sumOLAmount": "SELECT SUM(OL_AMOUNT) FROM ORDER_LINE WHERE OL_O_ID = ? AND OL_D_ID = ? AND OL_W_ID = ?", # no_o_id, d_id, w_id
+            "deleteNewOrder": "DELETE FROM NEW_ORDER WHERE NO_D_ID = ? AND NO_W_ID = ? AND NO_O_ID = ?", # d_id, w_id, no_o_id
+            "updateOrders": "UPDATE ORDERS SET O_CARRIER_ID = ? WHERE O_ID = ? AND O_D_ID = ? AND O_W_ID = ?", # o_carrier_id, no_o_id, d_id, w_id
+            "updateOrderLine": "UPDATE ORDER_LINE SET OL_DELIVERY_D = ? WHERE OL_O_ID = ? AND OL_D_ID = ? AND OL_W_ID = ?", # o_entry_d, no_o_id, d_id, w_id
+            "updateCustomer": "UPDATE CUSTOMER SET C_BALANCE = C_BALANCE + ? WHERE C_ID = ? AND C_D_ID = ? AND C_W_ID = ?", # ol_total, c_id, d_id, w_id
+        }
+
         
-        return ([ customer_info, misc, item_data ],0)
+        w_id = params["w_id"]
+        o_carrier_id = params["o_carrier_id"]
+        ol_delivery_d = params["ol_delivery_d"].isoformat()[:-3]
+
+        with self.driver.session(self.database, SessionType.DATA) as data_session:
+            with data_session.transaction(TransactionType.WRITE) as tx:
+                result = [ ]
+                for d_id in range(1, constants.DISTRICTS_PER_WAREHOUSE+1):
+                    q = f"""
+match
+$d isa DISTRICT, has D_ID {w_id * DPW + d_id};
+$o (customer: $c, district: $d) isa ORDER, has O_ID $o_id, has O_NEW_ORDER true;
+$c has C_ID $c_id;
+get $o_id, $c_id;
+"""
+                    new_order_info = tx.query.get(q)
+                    if len(new_order_info) == 0:
+                        ## No orders for this district: skip it. Note: This must be reported if > 1%
+                        continue
+                    assert len(new_order_info) == 1
+                    no_o_id = new_order_info[0].get('o_id').as_attribute().get_value()
+                    c_id = new_order_info[0].get('c_id').as_attribute().get_value()
+
+                    q = f"""
+match
+$d isa DISTRICT, has D_ID {w_id * DPW + d_id};
+$o (district: $d) isa ORDER, has O_ID {no_o_id};
+$ol (order: $o, item: $i) isa ORDER_LINE, has OL_QUANTITY $ol_quantity;
+get $ol_quantity;
+sum;
+"""
+                    ol_total = tx.query.get(q)
+                    assert len(ol_total) == 1
+                    ol_total = ol_total[0].get('ol_quantity').as_attribute().get_value()
+                    
+                    q = f"""
+match
+$c isa CUSTOMER, has C_ID {w_id * DPW * CPD + d_id * CPD + c_id}, has C_BALANCE $c_balance;
+?c_balance_new = $c_balance + {ol_total};
+$o (customer: $c) isa ORDER, has O_ID {no_o_id}, has O_NEW_ORDER $o_new_order, has O_CARRIER_ID $o_carrier_id;
+delete 
+$o has $o_new_order, $o_carrier_id;
+$c has $c_balance;
+insert 
+$o has O_NEW_ORDER false, has O_CARRIER_ID {o_carrier_id};
+$c has C_BALANCE ?c_balance_new;
+"""
+                    tx.query.update(q)
+
+                    q = f"""
+match
+$d isa DISTRICT, has D_ID {w_id * DPW + d_id};
+$o (district: $d) isa ORDER, has O_ID {no_o_id};
+$ol (order: $o, item: $i) isa ORDER_LINE;
+insert
+$ol has OL_DELIVERY_D {ol_delivery_d};
+"""
+                    tx.query.insert(q)
+
+                    # If there are no order lines, SUM returns null. There should always be order lines.
+                    assert ol_total != None, "ol_total is NULL: there are no order lines. This should not happen"
+                    assert ol_total > 0.0
+
+                    # These must be logged in the "result file" according to TPC-C 2.7.2.2 (page 39)
+                    # We remove the queued time, completed time, w_id, and o_carrier_id: the client can figure
+                    # them out
+                    result.append((d_id, no_o_id))
+                ## FOR
+
+                self.driver.commit()
+        return (result,0)
 
     ## ----------------------------------------------
     ## doOrderStatus

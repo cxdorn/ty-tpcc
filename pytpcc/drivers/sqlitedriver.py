@@ -149,7 +149,7 @@ class SqliteDriver(AbstractDriver):
     ## ----------------------------------------------
     def loadTuples(self, tableName, tuples):
         if len(tuples) == 0: return
-        
+
         p = ["?"]*len(tuples[0])
         sql = "INSERT INTO %s VALUES (%s)" % (tableName, ",".join(p))
         self.cursor.executemany(sql, tuples)

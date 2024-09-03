@@ -1,7 +1,27 @@
-# TypeDB
+# PyTPCC for TypeDB
+
+## TPCC Benchmark
+
+### Notes and changes
+
+TODO
 
 
-## Running the Benchmark
+## Running the Benchmark locall on MacOS
+
+### TypeDB
+
+Run `server` as usual.
+
+See `launch.json` config for TPCC running options.
+
+### Postgres
+
+TODO
+
+### MySQL
+
+TODO
 
 ### Sqlite
 
@@ -9,6 +29,8 @@ Install using `brew`. Run using
 ```
 python tpcc.py --config=sqlite.config --no-load sqlite   
 ```
+
+Also see `launch.json` config.
 
 ### MongoDB
 
