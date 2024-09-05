@@ -61,6 +61,22 @@
             "args": "--duration=60 --scalefactor=10 --debug --reset postgres"
         },
         {
+            "name": "Postgres TPCC Only Execute",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
+            "console": "integratedTerminal",
+            "args": "--duration=3600 --scalefactor=10 --no-load --debug --reset postgres"
+        },
+        {
+            "name": "Postgres TPCC Only Load",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
+            "console": "integratedTerminal",
+            "args": "--duration=60 --scalefactor=10 --no-execute --debug --reset postgres"
+        },
+        {
             "name": "Python Debugger: Current File with Chosen Arguments",
             "type": "debugpy",
             "request": "launch",
