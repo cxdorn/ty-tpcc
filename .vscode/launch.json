@@ -77,6 +77,22 @@
             "args": "--duration=60 --scalefactor=10 --no-execute --debug --reset postgres"
         },
         {
+            "name": "Neo4j TPCC Only Execute",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
+            "console": "integratedTerminal",
+            "args": "--duration=60 --scalefactor=10 --no-load --debug neo4j"
+        },
+        {
+            "name": "Neo4j TPCC Only Load",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
+            "console": "integratedTerminal",
+            "args": "--duration=60 --scalefactor=10 --no-execute --debug --reset neo4j"
+        },
+        {
             "name": "Python Debugger: Current File with Chosen Arguments",
             "type": "debugpy",
             "request": "launch",

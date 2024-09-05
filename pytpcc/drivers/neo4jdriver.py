@@ -4,6 +4,7 @@ import os
 from neo4j import GraphDatabase
 import getpass
 import logging
+from pprint import pformat
 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -12,9 +13,9 @@ from drivers.abstractdriver import AbstractDriver
 
 
 ## ==============================================
-## Neo4jDriver
+## Neo4JDriver
 ## ==============================================
-class Neo4jDriver(AbstractDriver):
+class Neo4JDriver(AbstractDriver):
     DEFAULT_CONFIG = {
         "uri": ("The URI for the Neo4j database", "bolt://localhost:7687"),
         "database": ("The name of the Neo4j database", "neo4j"),
@@ -23,7 +24,7 @@ class Neo4jDriver(AbstractDriver):
     }
     
     def __init__(self, ddl):
-        super(Neo4jDriver, self).__init__("neo4j", ddl)
+        super(Neo4JDriver, self).__init__("neo4j", ddl)
         self.driver = None
         self.session = None
     
@@ -31,13 +32,13 @@ class Neo4jDriver(AbstractDriver):
     ## makeDefaultConfig
     ## ----------------------------------------------
     def makeDefaultConfig(self):
-        return Neo4jDriver.DEFAULT_CONFIG
+        return Neo4JDriver.DEFAULT_CONFIG
     
     ## ----------------------------------------------
     ## loadConfig
     ## ----------------------------------------------
     def loadConfig(self, config):
-        for key in Neo4jDriver.DEFAULT_CONFIG.keys():
+        for key in Neo4JDriver.DEFAULT_CONFIG.keys():
             assert key in config, f"Missing parameter '{key}' in Neo4j configuration"
         
         self.database = str(config["database"])
@@ -204,17 +205,7 @@ class Neo4jDriver(AbstractDriver):
                     c_id=tuple[0], d_id=tuple[3], w_id=tuple[4],
                     h_date=tuple[5].isoformat()[:-3], h_amount=tuple[6], h_data=tuple[7])
 
-
-            for query in write_query:
-                if is_update:
-                    tx.query.update(query)
-                else:
-                    tx.query.insert(query)
-
             logging.info("Committing %d queries for type %s" % (len(tuples), tableName))
-            start_time = time.time()
-            tx.commit()
-            logging.info(f"Committed! Time per query: {(time.time() - start_time) / len(tuples)}")
 
     ## ----------------------------------------------
     ## loadFinish
@@ -225,7 +216,7 @@ class Neo4jDriver(AbstractDriver):
     ## ----------------------------------------------
     ## doNewOrder
     ## ----------------------------------------------
-     def doNewOrder(self, params):
+    def doNewOrder(self, params):
         w_id = params["w_id"]
         d_id = params["d_id"]
         c_id = params["c_id"]
