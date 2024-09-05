@@ -142,6 +142,7 @@ define
   OL_AMOUNT sub attribute, value double;
   OL_DIST_INFO sub attribute, value string;
 
+  # TODO: consider keeping track of warehouse w_id as well
   CUSTOMER_HISTORY sub relation,
     relates customer,
     owns H_DATE,

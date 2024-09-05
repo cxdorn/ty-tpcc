@@ -38,6 +38,7 @@ import urllib
 from pprint import pformat
 from time import sleep
 import pymongo
+import os
 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -197,8 +198,8 @@ class MongodbDriver(AbstractDriver):
         "uri":              ("The mongodb connection string or URI", "mongodb://localhost:27017"),
         "name":             ("Database name", "tpcc"),
         "denormalize":      ("If true, data will be denormalized using MongoDB schema design best practices", True),
-        "notransactions":   ("If true, transactions will not be used (benchmarking only)", False),
-        "findandmodify":    ("If true, all things to update will be fetched via findAndModify", True),
+        "notransactions":   ("If true, transactions will not be used (benchmarking only)", True),
+        "findandmodify":    ("If true, all things to update will be fetched via findAndModify", False),
         "secondary_reads":  ("If true, we will allow secondary reads", True),
         "retry_writes":     ("If true, we will enable retryable writes", True),
         "causal_consistency":  ("If true, we will perform causal reads ", True),
@@ -212,7 +213,7 @@ class MongodbDriver(AbstractDriver):
 
     def __init__(self, ddl):
         super(MongodbDriver, self).__init__("mongodb", ddl)
-        self.no_transactions = False
+        self.no_transactions = True
         self.find_and_modify = True
         self.read_preference = "primary"
         self.database = None
@@ -260,14 +261,14 @@ class MongodbDriver(AbstractDriver):
                 config[key] = str(MongodbDriver.DEFAULT_CONFIG[key][1])
 
         logging.debug("Default plus our config %s", pformat(config))
-        self.denormalize = config['denormalize'] == 'True'
-        self.no_transactions = config['notransactions'] == 'True'
+        self.denormalize = config['denormalize'] == True
+        self.no_transactions = config['notransactions'] == True
         self.shards = int(config['shards'])
         self.warehouses = config['warehouses']
-        self.find_and_modify = config['findandmodify'] == 'True'
-        self.causal_consistency = config['causal_consistency'] == 'True'
-        self.retry_writes = config['retry_writes'] == 'True'
-        self.secondary_reads = config['secondary_reads'] == 'True'
+        self.find_and_modify = config['findandmodify'] == True
+        self.causal_consistency = config['causal_consistency'] == True
+        self.retry_writes = config['retry_writes'] == True
+        self.secondary_reads = config['secondary_reads'] == True
         if self.secondary_reads:
             self.read_preference = "nearest"
 
