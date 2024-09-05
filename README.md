@@ -11,38 +11,45 @@ TODO
 
 ### TypeDB
 
-Run `server` as usual.
+* `brew install typedb`
+* `typedb server`
 
 See `launch.json` config for TPCC running options.
 
 ### Postgres
 
-TODO
+* `brew install postgresql` (tested with `postgresql@14`)
+* `brew services start postgresql`
+* `pip install psycopg2-binary` 
 
-### MySQL
-
-TODO
-
-### Sqlite
-
-Install using `brew`. Run using
-```
-python tpcc.py --config=sqlite.config --no-load sqlite   
-```
-
-Also see `launch.json` config.
+Then see `launch.json` for launch configurations.
 
 ### MongoDB
 
-Install using `brew`. Then start server with replicas enabled:
+* Install using `brew`. 
+* `pip install pymongo`
+
+### With transactions (see config)
 
 ```
 mongod --replSet rs0 --bind_ip localhost --config /opt/homebrew/etc/mongod.conf
 ```
 
-Install `pymongo`. Then run benchmark:
-```
-python tpcc.py --config=mongodb.config --no-load mongodb   
-```
+Then see `launch.json`.
 
 Use flag `--no-load` if the database has already been created.
+
+### Without transactions 
+
+```
+mongod --bind_ip localhost --config /opt/homebrew/etc/mongod.conf
+```
+
+Then see `launch.json`.
+
+## Neo4j
+
+* `brew install neo4j`
+* `brew services start neo4j`
+* `pip install neo4j`
+

@@ -12,10 +12,8 @@
 from __future__ import with_statement
 
 import os
-import sqlite3
 import logging
-import subprocess
-from pprint import pprint,pformat
+from pprint import pformat
 import time
 from typedb.driver import TypeDB, SessionType, TransactionType, TypeDBOptions, TypeDBCredential
 
@@ -345,11 +343,6 @@ has H_DATE {h_date}, has H_AMOUNT {h_amount}, has H_DATA "{h_data}";"""
                 else:
                     tx.query.insert(query)
 
-            if tableName == "STOCK":
-                full_query = "\n".join(write_query)
-                with open(f"full_query_{tableName}.tql", "w") as f:
-                    f.write(full_query)
- 
             logging.info("Committing %d queries for type %s" % (len(tuples), tableName))
             start_time = time.time()
             tx.commit()
