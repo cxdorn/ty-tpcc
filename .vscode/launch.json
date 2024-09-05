@@ -53,6 +53,14 @@
             "args": "--duration=60 --scalefactor=10 --debug --reset mongodb"
         },
         {
+            "name": "Postgres TPCC Full",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
+            "console": "integratedTerminal",
+            "args": "--duration=60 --scalefactor=10 --debug --reset postgres"
+        },
+        {
             "name": "Python Debugger: Current File with Chosen Arguments",
             "type": "debugpy",
             "request": "launch",

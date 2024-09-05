@@ -1,0 +1,115 @@
+09-05-2024 11:36:44 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:36:44 [<module>:252] INFO : Reseting database
+09-05-2024 11:38:13 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:38:13 [<module>:252] INFO : Reseting database
+09-05-2024 11:39:44 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:39:44 [<module>:252] INFO : Reseting database
+09-05-2024 11:39:45 [loadConfig:175] DEBUG: Loading DDL file '/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.sql'
+09-05-2024 11:43:33 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:43:33 [<module>:252] INFO : Reseting database
+09-05-2024 11:43:34 [loadConfig:176] DEBUG: Loading DDL file '/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.sql'
+09-05-2024 11:43:41 [<module>:255] INFO : Initializing TPC-C benchmark using PostgresDriver
+09-05-2024 11:43:41 [<module>:260] DEBUG: Scale Parameters:
+10000 items
+4 warehouses
+10 districts/warehouse
+300 customers/district
+90 initial new orders/district
+09-05-2024 11:43:41 [<module>:265] INFO : Loading TPC-C benchmark data using PostgresDriver
+09-05-2024 11:43:41 [execute:059] DEBUG: Loading ITEM table
+09-05-2024 11:43:41 [loadItems:086] DEBUG: LOAD - ITEM:   500 / 10000
+09-05-2024 11:48:34 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:48:34 [<module>:252] INFO : Reseting database
+09-05-2024 11:48:34 [loadConfig:176] DEBUG: Loading DDL file '/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.sql'
+09-05-2024 11:48:42 [<module>:255] INFO : Initializing TPC-C benchmark using PostgresDriver
+09-05-2024 11:48:42 [<module>:260] DEBUG: Scale Parameters:
+10000 items
+4 warehouses
+10 districts/warehouse
+300 customers/district
+90 initial new orders/district
+09-05-2024 11:48:42 [<module>:265] INFO : Loading TPC-C benchmark data using PostgresDriver
+09-05-2024 11:48:42 [execute:059] DEBUG: Loading ITEM table
+09-05-2024 11:48:42 [loadItems:086] DEBUG: LOAD - ITEM:   500 / 10000
+09-05-2024 11:50:41 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:50:41 [<module>:252] INFO : Reseting database
+09-05-2024 11:50:41 [loadConfig:176] DEBUG: Loading DDL file '/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.sql'
+09-05-2024 11:50:41 [<module>:255] INFO : Initializing TPC-C benchmark using PostgresDriver
+09-05-2024 11:50:41 [<module>:260] DEBUG: Scale Parameters:
+10000 items
+4 warehouses
+10 districts/warehouse
+300 customers/district
+90 initial new orders/district
+09-05-2024 11:50:41 [<module>:265] INFO : Loading TPC-C benchmark data using PostgresDriver
+09-05-2024 11:50:41 [execute:059] DEBUG: Loading ITEM table
+09-05-2024 11:50:41 [loadItems:086] DEBUG: LOAD - ITEM:   500 / 10000
+09-05-2024 11:50:41 [loadTuples:207] DEBUG: SQL Query: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+09-05-2024 11:50:41 [loadTuples:208] DEBUG: Number of columns: 5
+09-05-2024 11:50:41 [loadTuples:209] DEBUG: First tuple: [1, 5591, 'wouzkidypvyyejmjx', 79.69, 'lhrvhdtjoeyfqglzoteveqwhxsehciaincidtl']
+09-05-2024 11:50:41 [loadTuples:214] ERROR: Error executing SQL: there is no parameter $1
+LINE 1: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+                                 ^
+
+09-05-2024 11:50:41 [loadTuples:215] ERROR: SQL: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+09-05-2024 11:50:41 [loadTuples:216] ERROR: First tuple: [1, 5591, 'wouzkidypvyyejmjx', 79.69, 'lhrvhdtjoeyfqglzoteveqwhxsehciaincidtl']
+09-05-2024 11:51:14 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:51:14 [<module>:252] INFO : Reseting database
+09-05-2024 11:51:14 [loadConfig:176] DEBUG: Loading DDL file '/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.sql'
+09-05-2024 11:51:14 [<module>:255] INFO : Initializing TPC-C benchmark using PostgresDriver
+09-05-2024 11:51:14 [<module>:260] DEBUG: Scale Parameters:
+10000 items
+4 warehouses
+10 districts/warehouse
+300 customers/district
+90 initial new orders/district
+09-05-2024 11:51:14 [<module>:265] INFO : Loading TPC-C benchmark data using PostgresDriver
+09-05-2024 11:51:14 [execute:059] DEBUG: Loading ITEM table
+09-05-2024 11:51:14 [loadItems:086] DEBUG: LOAD - ITEM:   500 / 10000
+09-05-2024 11:51:14 [loadTuples:207] DEBUG: SQL Query: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+09-05-2024 11:51:14 [loadTuples:208] DEBUG: Number of columns: 5
+09-05-2024 11:51:14 [loadTuples:209] DEBUG: First tuple: [1, 294, 'gtjzmodrbuelmtauvszquv', 94.38, 'usrsiszzegatptxdrnmtoyyplurwukdifqpecw']
+09-05-2024 11:51:14 [loadTuples:214] ERROR: Error executing SQL: there is no parameter $1
+LINE 1: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+                                 ^
+
+09-05-2024 11:51:14 [loadTuples:215] ERROR: SQL: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+09-05-2024 11:51:14 [loadTuples:216] ERROR: First tuple: [1, 294, 'gtjzmodrbuelmtauvszquv', 94.38, 'usrsiszzegatptxdrnmtoyyplurwukdifqpecw']
+09-05-2024 11:53:02 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:53:02 [<module>:252] INFO : Reseting database
+09-05-2024 11:53:02 [loadConfig:176] DEBUG: Loading DDL file '/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.sql'
+09-05-2024 11:53:02 [<module>:255] INFO : Initializing TPC-C benchmark using PostgresDriver
+09-05-2024 11:53:02 [<module>:260] DEBUG: Scale Parameters:
+10000 items
+4 warehouses
+10 districts/warehouse
+300 customers/district
+90 initial new orders/district
+09-05-2024 11:53:02 [<module>:265] INFO : Loading TPC-C benchmark data using PostgresDriver
+09-05-2024 11:53:02 [execute:059] DEBUG: Loading ITEM table
+09-05-2024 11:53:03 [loadItems:086] DEBUG: LOAD - ITEM:   500 / 10000
+09-05-2024 11:53:03 [loadTuples:207] DEBUG: SQL Query: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+09-05-2024 11:53:03 [loadTuples:208] DEBUG: Number of columns: 5
+09-05-2024 11:53:03 [loadTuples:209] DEBUG: First tuple: [1, 9060, 'cmisqrfyickcrelrtcy', 44.43, 'wxsrtkjtyujlqwgwmfnkjxhlmjcw']
+09-05-2024 11:53:03 [loadTuples:215] ERROR: Error executing SQL: there is no parameter $1
+LINE 1: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+                                 ^
+
+09-05-2024 11:53:03 [loadTuples:216] ERROR: SQL: INSERT INTO ITEM VALUES ($1,$2,$3,$4,$5)
+09-05-2024 11:53:03 [loadTuples:217] ERROR: Tuple: [1, 9060, 'cmisqrfyickcrelrtcy', 44.43, 'wxsrtkjtyujlqwgwmfnkjxhlmjcw']
+09-05-2024 11:57:18 [<module>:245] DEBUG: Using default configuration for postgres
+09-05-2024 11:57:18 [<module>:252] INFO : Reseting database
+09-05-2024 11:57:19 [loadConfig:176] DEBUG: Loading DDL file '/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.sql'
+09-05-2024 11:57:19 [<module>:255] INFO : Initializing TPC-C benchmark using PostgresDriver
+09-05-2024 11:57:19 [<module>:260] DEBUG: Scale Parameters:
+10000 items
+4 warehouses
+10 districts/warehouse
+300 customers/district
+90 initial new orders/district
+09-05-2024 11:57:19 [<module>:265] INFO : Loading TPC-C benchmark data using PostgresDriver
+09-05-2024 11:57:19 [execute:059] DEBUG: Loading ITEM table
+09-05-2024 11:57:19 [loadItems:086] DEBUG: LOAD - ITEM:   500 / 10000
+09-05-2024 11:57:19 [loadTuples:207] DEBUG: SQL Query: INSERT INTO ITEM VALUES (%s,%s,%s,%s,%s)
+09-05-2024 11:57:19 [loadTuples:208] DEBUG: Number of columns: 5
+09-05-2024 11:57:19 [loadTuples:209] DEBUG: First tuple: [1, 8636, 'mrcdylsdfmjbdfxkndyovdu', 19.48, 'bckqqeindlahwoquoedzfitrbykcimneezxqnsdffqqli']

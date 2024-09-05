@@ -34,9 +34,11 @@ from __future__ import with_statement
 import os
 import sqlite3
 import psycopg2
+import getpass
 import logging
 import subprocess
 from pprint import pprint,pformat
+import re
 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -102,16 +104,19 @@ TXN_QUERIES = {
 
 
 ## ==============================================
-## SqliteDriver
+## PostgresDriver
 ## ==============================================
-class SqliteDriver(AbstractDriver):
+class PostgresDriver(AbstractDriver):
     DEFAULT_CONFIG = {
-        "database": ("The path to the SQLite database", "/tmp/tpcc.db" ),
+        "host": ("The host address of the PostgreSQL database", "localhost"),
+        "port": ("The port number of the PostgreSQL database", 5432),
+        "database": ("The name of the PostgreSQL database", "tpcc"),
+        "user": ("The username to connect to the PostgreSQL database", "postgres"),
+        "password": ("The password to connect to the PostgreSQL database", ""),
     }
     
     def __init__(self, ddl):
-        super(SqliteDriver, self).__init__("sqlite", ddl)
-        self.database = None
+        super(PostgresDriver, self).__init__("postgres", ddl)
         self.conn = None
         self.cursor = None
     
@@ -119,31 +124,69 @@ class SqliteDriver(AbstractDriver):
     ## makeDefaultConfig
     ## ----------------------------------------------
     def makeDefaultConfig(self):
-        return SqliteDriver.DEFAULT_CONFIG
+        return PostgresDriver.DEFAULT_CONFIG
     
     ## ----------------------------------------------
     ## loadConfig
     ## ----------------------------------------------
     def loadConfig(self, config):
-        for key in SqliteDriver.DEFAULT_CONFIG.keys():
-            assert key in config, "Missing parameter '%s' in %s configuration" % (key, self.name)
+        for key in PostgresDriver.DEFAULT_CONFIG.keys():
+            assert key in config, "Missing parameter '%s' in Postgres configuration" % (key)
         
         self.database = str(config["database"])
+        self.host = str(config["host"])
+        self.port = int(config["port"])
+        self.user = getpass.getuser()  # Get the current system user
+        self.password = ""  # Assuming no password for the default user
 
-        if config["reset"] and os.path.exists(self.database):
-            logging.debug("Deleting database '%s'" % self.database)
-            os.unlink(self.database)
-        
-        if os.path.exists(self.database) == False:
-            logging.debug("Loading DDL file '%s'" % (self.ddl))
-            ## HACK
-            cmd = "sqlite3 %s < %s" % (self.database, self.ddl)
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            assert result.returncode == 0, cmd + "\n" + result.stdout + "\n" + result.stderr
-        ## IF
+        if config["reset"]:
+            # Connect to 'postgres' database as superuser
+            self.conn = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                database="postgres",
+                user=self.user,
+                password=self.password
+            )
+            self.conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+            self.cursor = self.conn.cursor()
             
-        self.conn = sqlite3.connect(self.database)
+            # Drop the database if it exists
+            self.cursor.execute(f"DROP DATABASE IF EXISTS {self.database}")
+            
+            # Create the database
+            self.cursor.execute(f"CREATE DATABASE {self.database}")
+            
+            # Close the connection to 'postgres' database
+            self.cursor.close()
+            self.conn.close()
+
+        # Connect to the benchmark database with the superuser
+        self.conn = psycopg2.connect(
+            host=self.host,
+            port=self.port,
+            database=self.database,
+            user=self.user,
+            password=self.password
+        )
         self.cursor = self.conn.cursor()
+
+        if config["reset"]:
+            # Load the schema
+            logging.debug("Loading DDL file '%s'" % (self.ddl))
+            with open(self.ddl) as f:
+                ddl_script = f.read()
+            
+            # Replace data types
+            ddl_script = re.sub(r'\bTINYINT\b', 'SMALLINT', ddl_script)
+            ddl_script = re.sub(r'\bMEDIUMINT\b', 'INTEGER', ddl_script)
+            ddl_script = re.sub(r'\bINT\s+UNSIGNED\b', 'INTEGER', ddl_script)
+            ddl_script = re.sub(r'\bLONGTEXT\b', 'TEXT', ddl_script)
+            ddl_script = re.sub(r'\bDATETIME\b', 'TIMESTAMP', ddl_script)
+            
+            # Execute the modified DDL script
+            self.cursor.execute(ddl_script)
+            self.conn.commit()
     
     ## ----------------------------------------------
     ## loadTuples
@@ -151,9 +194,27 @@ class SqliteDriver(AbstractDriver):
     def loadTuples(self, tableName, tuples):
         if len(tuples) == 0: return
 
-        p = ["?"]*len(tuples[0])
-        sql = "INSERT INTO %s VALUES (%s)" % (tableName, ",".join(p))
-        self.cursor.executemany(sql, tuples)
+        # Count the number of columns
+        num_columns = len(tuples[0])
+        
+        # Create a list of placeholders like %s, %s, %s, etc.
+        placeholders = ["%s" for _ in range(num_columns)]
+        
+        # Construct the SQL query with the correct placeholders
+        sql = f"INSERT INTO {tableName} VALUES ({','.join(placeholders)})"
+        
+        # Debug information
+        logging.debug(f"SQL Query: {sql}")
+        logging.debug(f"Number of columns: {num_columns}")
+        logging.debug(f"First tuple: {tuples[0]}")
+        
+        try:
+            self.cursor.executemany(sql, tuples)
+        except psycopg2.Error as e:
+            logging.error(f"Error executing SQL: {e}")
+            logging.error(f"SQL: {sql}")
+            logging.error(f"First tuple: {tuples[0]}")
+            raise
         
         logging.debug("Loaded %d tuples for tableName %s" % (len(tuples), tableName))
         return
