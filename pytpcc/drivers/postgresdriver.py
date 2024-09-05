@@ -192,6 +192,13 @@ class PostgresDriver(AbstractDriver):
         # Enable verbose logging
         self.cursor.execute("SET client_min_messages TO DEBUG1;")
 
+        # Set max_parallel_workers_per_gather to 0
+        self.cursor.execute("SET max_parallel_workers_per_gather = 0;")
+
+        # Ensure synchronous_commit is on
+        self.cursor.execute("SET synchronous_commit = on;")
+
+
     ## ----------------------------------------------
     ## Trigger Validation
     ## ----------------------------------------------
@@ -318,6 +325,7 @@ class PostgresDriver(AbstractDriver):
             self.cursor.execute(q["getItemInfo"], [i_ids[i]])
             items.append(self.cursor.fetchone())
         assert len(items) == len(i_ids)
+        all_local = 1 if all_local else 0
         
         ## TPCC defines 1% of neworder gives a wrong itemid, causing rollback.
         ## Note that this will happen with 1% of transactions on purpose.
@@ -368,7 +376,7 @@ class PostgresDriver(AbstractDriver):
             i_data = itemInfo[2]
             i_price = itemInfo[0]
 
-            self.cursor.execute(q["getStockInfo"] % (d_id), [ol_i_id, ol_supply_w_id])
+            self.cursor.execute(q["getStockInfo"] % (d_id, ol_i_id, ol_supply_w_id))
             stockInfo = self.cursor.fetchone()
             if len(stockInfo) == 0:
                 logging.warn("No STOCK record for (ol_i_id=%d, ol_supply_w_id=%d)" % (ol_i_id, ol_supply_w_id))
