@@ -117,6 +117,7 @@ class PostgresDriver(AbstractDriver):
                 password=self.password
             )
             self.conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
             self.cursor = self.conn.cursor()
             
             # Drop the database if it exists
@@ -159,11 +160,10 @@ class PostgresDriver(AbstractDriver):
         # Enable verbose logging
         self.cursor.execute("SET client_min_messages TO DEBUG1;")
 
-        # Set max_parallel_workers_per_gather to 0
-        self.cursor.execute("SET max_parallel_workers_per_gather = 0;")
-
-        # Ensure synchronous_commit is on
-        self.cursor.execute("SET synchronous_commit = on;")
+        # Ensure durability (full fsync)
+        self.cursor.execute("SHOW wal_sync_method;")
+        wal_sync_method = self.cursor.fetchone()[0]
+        assert str(wal_sync_method) == "fsync_writethrough"
 
 
     ## ----------------------------------------------
@@ -222,7 +222,7 @@ class PostgresDriver(AbstractDriver):
         self.conn.commit()
 
     ## ----------------------------------------------
-    ## doDelivery
+    ## T1: doDelivery
     ## ----------------------------------------------
     def doDelivery(self, params):
         q = TXN_QUERIES["DELIVERY"]
@@ -267,7 +267,7 @@ class PostgresDriver(AbstractDriver):
         return (result,0)
 
     ## ----------------------------------------------
-    ## doNewOrder
+    ## T2: doNewOrder
     ## ----------------------------------------------
     def doNewOrder(self, params):
         q = TXN_QUERIES["NEW_ORDER"]
@@ -397,7 +397,7 @@ class PostgresDriver(AbstractDriver):
         return ([ customer_info, misc, item_data ],0)
 
     ## ----------------------------------------------
-    ## doOrderStatus
+    ## T3: doOrderStatus
     ## ----------------------------------------------
     def doOrderStatus(self, params):
         q = TXN_QUERIES["ORDER_STATUS"]
@@ -437,7 +437,7 @@ class PostgresDriver(AbstractDriver):
         return ([ customer, order, orderLines ],0)
 
     ## ----------------------------------------------
-    ## doPayment
+    ## T4: doPayment
     ## ----------------------------------------------    
     def doPayment(self, params):
         q = TXN_QUERIES["PAYMENT"]
@@ -506,7 +506,7 @@ class PostgresDriver(AbstractDriver):
         return ([ warehouse, district, customer ],0)
         
     ## ----------------------------------------------
-    ## doStockLevel
+    ## T5: doStockLevel
     ## ----------------------------------------------    
     def doStockLevel(self, params):
         q = TXN_QUERIES["STOCK_LEVEL"]

@@ -358,7 +358,7 @@ has H_DATE {h_date}, has H_AMOUNT {h_amount}, has H_DATA "{h_data}";"""
         return None
 
     ## ----------------------------------------------
-    ## doNewOrder
+    ## T1: doNewOrder
     ## ----------------------------------------------
     def doNewOrder(self, params):
         # For reference, the SQL queries are:
@@ -533,7 +533,7 @@ has OL_AMOUNT {ol_amount}, has OL_DIST_INFO "{s_dist_xx}";"""
         ## WITH
 
     ## ----------------------------------------------
-    ## doDelivery
+    ## T2: doDelivery
     ## ----------------------------------------------
     def doDelivery(self, params):
         # For reference, the SQL queries are:
@@ -620,7 +620,7 @@ $ol has OL_DELIVERY_D {ol_delivery_d};
         return (result,0)
 
     ## ----------------------------------------------
-    ## doOrderStatus
+    ## T3: doOrderStatus
     ## ----------------------------------------------
     def doOrderStatus(self, params):
         # For reference, the SQL queries are
@@ -719,7 +719,7 @@ get $i_id, $ol_supply_w_id, $ol_quantity, $ol_amount, $ol_dist_info;"""
                 return ([ customer_data, order, orderLines_data ],0)
 
     ## ----------------------------------------------
-    ## doPayment
+    ## T4: doPayment
     ## ----------------------------------------------    
     def doPayment(self, params):
         # For reference, the SQL queries are
@@ -927,7 +927,7 @@ $h (customer: $c) isa CUSTOMER_HISTORY, has H_DATE {h_date}, has H_AMOUNT {h_amo
 
         
     ## ----------------------------------------------
-    ## doStockLevel
+    ## T5: doStockLevel
     ## ----------------------------------------------    
     def doStockLevel(self, params):
         q = {
