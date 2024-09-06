@@ -492,7 +492,8 @@ get $s_quantity, $s_data, $s_ytd, $s_order_cnt, $s_remote_cnt, $s_dist_xx;"""
                         s_quantity = s_quantity + 91 - ol_quantity
                     s_order_cnt += 1
                     
-                    if ol_supply_w_id != w_id: s_remote_cnt += 1
+                    if ol_supply_w_id != w_id: 
+                        s_remote_cnt += 1
 
                     if i_data.find(constants.ORIGINAL_STRING) != -1 and s_data.find(constants.ORIGINAL_STRING) != -1:
                         brand_generic = 'B'
@@ -507,14 +508,20 @@ $i isa ITEM, has I_ID {ol_i_id};
 $w isa WAREHOUSE, has W_ID {ol_supply_w_id};
 $d isa DISTRICT, has D_ID {w_id * DPW + d_id};
 $o (district: $d) isa ORDER, has O_ID {d_next_o_id};
-$s (item: $i, warehouse: $w) isa STOCKING, has S_QUANTITY $s_quantity;
-delete $s has $s_quantity;
-insert $s has S_QUANTITY {s_quantity}, has S_YTD {s_ytd}, 
-has S_ORDER_CNT {s_order_cnt}, has S_REMOTE_CNT {s_remote_cnt};
+$s (item: $i, warehouse: $w) isa STOCKING, 
+  has S_QUANTITY $s_quantity, has S_YTD $s_ytd, 
+  has S_ORDER_CNT $s_order_cnt, has S_REMOTE_CNT $s_remote_cnt;
+delete 
+$s has $s_quantity, has S_YTD $s_ytd, 
+  has S_ORDER_CNT $s_order_cnt, has S_REMOTE_CNT $s_remote_cnt;
+insert 
+$s has S_QUANTITY {s_quantity}, has S_YTD {s_ytd}, 
+  has S_ORDER_CNT {s_order_cnt}, has S_REMOTE_CNT {s_remote_cnt};
 (item: $i, order: $o) isa ORDER_LINE, 
-has OL_NUMBER {ol_number}, has OL_SUPPLY_W_ID {ol_supply_w_id}, 
-has OL_DELIVERY_D {o_entry_d}, has OL_QUANTITY {ol_quantity}, 
-has OL_AMOUNT {ol_amount}, has OL_DIST_INFO "{s_dist_xx}";"""
+  has OL_NUMBER {ol_number}, has OL_SUPPLY_W_ID {ol_supply_w_id}, 
+  has OL_DELIVERY_D {o_entry_d}, has OL_QUANTITY {ol_quantity}, 
+  has OL_AMOUNT {ol_amount}, has OL_DIST_INFO "{s_dist_xx}";"""
+                    
                     tx.query.update(q)
 
                     ## Transaction profile states to use "ol_quantity * i_price"
@@ -662,14 +669,15 @@ has C_FIRST $c_first, has C_MIDDLE $c_middle, has C_LAST $c_last,
 has C_BALANCE $c_balance;
 $c_last "{c_last}";
 get $c_id, $c_first, $c_middle, $c_last,$c_balance;
+sort $c_first asc;
 """
                     # Get the midpoint customer's id
                     all_customers = list(tx.query.get(q))
                     assert len(all_customers) > 0
-                    namecnt = len(all_customers)
-                    index = (namecnt-1) // 2
+                    index = (len(all_customers) - 1) // 2
                     customer = all_customers[index]
                     c_id = customer.get('c_id').as_attribute().get_value() % CPD
+
                 assert customer is not None
                 assert c_id != None
                 customer_data = [
@@ -716,7 +724,7 @@ get $i_id, $ol_supply_w_id, $ol_quantity, $ol_amount, $ol_dist_info;"""
                     o_id = None
 
                 tx.commit()
-                return ([ customer_data, order, orderLines_data ],0)
+                return ([ customer_data, [o_id] if o_id else [], orderLines_data ],0)
 
     ## ----------------------------------------------
     ## T4: doPayment
@@ -780,6 +788,7 @@ $c_last "{c_last}";
 get $c_id, $c_first, $c_middle, $c_last, $c_street_1, $c_street_2, $c_city,
 $c_state, $c_zip, $c_phone, $c_since, $c_credit, $c_credit_lim, $c_discount,
 $c_balance, $c_ytd_payment, $c_payment_cnt, $c_data;
+sort $c_first asc;
 """
                     # Get the midpoint customer's id
                     all_customers = list(tx.query.get(q))
@@ -930,19 +939,19 @@ $h (customer: $c) isa CUSTOMER_HISTORY, has H_DATE {h_date}, has H_AMOUNT {h_amo
     ## T5: doStockLevel
     ## ----------------------------------------------    
     def doStockLevel(self, params):
-        q = {
-            "getOId": "SELECT D_NEXT_O_ID FROM DISTRICT WHERE D_W_ID = ? AND D_ID = ?", 
-            "getStockCount": """
-                SELECT COUNT(DISTINCT(OL_I_ID)) FROM ORDER_LINE, STOCK
-                WHERE OL_W_ID = ?
-                    AND OL_D_ID = ?
-                    AND OL_O_ID < ?
-                    AND OL_O_ID >= ?
-                    AND S_W_ID = ?
-                    AND S_I_ID = OL_I_ID
-                    AND S_QUANTITY < ?
-                """,
-        }
+        # q = {
+        #     "getOId": "SELECT D_NEXT_O_ID FROM DISTRICT WHERE D_W_ID = ? AND D_ID = ?", 
+        #     "getStockCount": """
+        #         SELECT COUNT(DISTINCT(OL_I_ID)) FROM ORDER_LINE, STOCK
+        #         WHERE OL_W_ID = ?
+        #             AND OL_D_ID = ?
+        #             AND OL_O_ID < ?
+        #             AND OL_O_ID >= ?
+        #             AND S_W_ID = ?
+        #             AND S_I_ID = OL_I_ID
+        #             AND S_QUANTITY < ?
+        #         """,
+        # }
 
         w_id = params["w_id"]
         d_id = params["d_id"]

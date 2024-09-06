@@ -82,7 +82,7 @@
             "request": "launch",
             "program": "/Users/cxdorn/Git/ty-tpcc/pytpcc/tpcc.py",
             "console": "integratedTerminal",
-            "args": "--duration=3600 --scalefactor=100 --no-load --debug neo4j"
+            "args": "--duration=60 --scalefactor=100 --no-load --debug neo4j"
         },
         {
             "name": "Neo4j TPCC Only Load",
