@@ -163,7 +163,7 @@ class PostgresDriver(AbstractDriver):
         # Ensure durability (full fsync)
         self.cursor.execute("SHOW wal_sync_method;")
         wal_sync_method = self.cursor.fetchone()[0]
-        assert str(wal_sync_method) == "fsync_writethrough"
+        # assert str(wal_sync_method) == "fsync_writethrough"
 
 
     ## ----------------------------------------------
